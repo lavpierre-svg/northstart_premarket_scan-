@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NorthStar PreMarket</title>
+
+<style>
+body{
+background:#0f1115;
+color:white;
+font-family:Arial;
+text-align:center;
+padding:20px;
+}
+
+h1{
+color:#3dd6ff;
+}
+
+button{
+background:#3dd6ff;
+border:none;
+padding:14px 20px;
+font-size:18px;
+border-radius:8px;
+margin:10px;
+}
+
+table{
+margin:auto;
+margin-top:20px;
+border-collapse:collapse;
+}
+
+td,th{
+padding:8px 14px;
+border-bottom:1px solid #333;
+}
+
+.green{color:#00ff9c}
+.red{color:#ff5a5a}
+
+</style>
+</head>
+
+<body>
+
+<h1>NorthStar PreMarket</h1>
+
+<button onclick="scan()">SCAN MARKET</button>
+
+<table id="table">
+<tr>
+<th>Ticker</th>
+<th>Price</th>
+<th>Gap %</th>
+</tr>
+</table>
+
+<script>
+
+const tickers = [
+"NVDA","TSLA","AMD","PLTR","SMCI",
+"MU","MRVL","AVGO","AAPL","XOM","CVX"
+]
+
+async function scan(){
+
+let results=[]
+
+for(let t of tickers){
+
+try{
+
+let url=`https://query1.finance.yahoo.com/v8/finance/chart/${t}?range=2d&interval=1d`
+
+let r=await fetch(url)
+let data=await r.json()
+
+let close=data.chart.result[0].indicators.quote[0].close
+
+let today=close[close.length-1]
+let yesterday=close[close.length-2]
+
+let gap=((today-yesterday)/yesterday)*100
+
+results.push({
+ticker:t,
+price:today,
+gap:gap
+})
+
+}catch(e){}
+
+}
+
+results.sort((a,b)=>Math.abs(b.gap)-Math.abs(a.gap))
+
+let table=document.getElementById("table")
+
+table.innerHTML="<tr><th>Ticker</th><th>Price</th><th>Gap %</th></tr>"
+
+for(let r of results){
+
+let color=r.gap>0?"green":"red"
+
+table.innerHTML+=`
+<tr>
+<td>${r.ticker}</td>
+<td>${r.price.toFixed(2)}</td>
+<td class="${color}">${r.gap.toFixed(2)}%</td>
+</tr>
+`
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
