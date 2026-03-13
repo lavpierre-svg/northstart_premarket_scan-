@@ -235,230 +235,263 @@
     // =============================
     // CONFIG
     // =============================
-    const API_KEY = "u1ujNxMOWm5fGfePMeOdrn3teLy8fzNW";
+    const API_KEY = "TA_CLE_FMP_ICI";
 
-    // Universe compact pour iPhone + limite API raisonnable.
-    // Tu peux en ajouter ou en retirer.
     const UNIVERSE = [
       "AAPL","AMD","AMZN","AVGO","BABA","COIN","CVX","GOOGL","META","MRVL",
       "MU","NFLX","NVDA","PLTR","QCOM","SMCI","TSLA","UBER","XOM","JPM"
     ];
 
-    const MARKET_SYMBOLS = ["SPY","QQQ","VIX"];
+    // Contexte marché simple et robuste pour plan gratuit
+    const MARKET_SYMBOLS = ["SPY","QQQ"];
+
+    // Mapping secteur simple pour éviter des appels API de plus
+    const SECTOR_MAP = {
+      NVDA:"SEMI", AMD:"SEMI", AVGO:"SEMI", MRVL:"SEMI", MU:"SEMI", QCOM:"SEMI",
+      TSLA:"EV", UBER:"TRANSPORT",
+      XOM:"ENERGY", CVX:"ENERGY",
+      META:"TECH", GOOGL:"TECH", AAPL:"TECH", AMZN:"TECH", NFLX:"TECH",
+      PLTR:"AI", SMCI:"AI", COIN:"CRYPTO", JPM:"BANKS", BABA:"CHINA"
+    };
 
     // =============================
     // HELPERS
     // =============================
-    const fmt1 = (n) => Number.isFinite(n) ? n.toFixed(1) : "—";
-    const fmt2 = (n) => Number.isFinite(n) ? n.toFixed(2) : "—";
-    const absPct = (n) => Number.isFinite(n) ? Math.abs(n) : 0;
+    function fmt1(n){ return Number.isFinite(n) ? n.toFixed(1) : "—"; }
+    function absPct(n){ return Number.isFinite(n) ? Math.abs(n) : 0; }
 
     function greenDots(score) {
       return "🟢".repeat(Math.max(0, Math.min(5, score)));
     }
 
-    function safeArray(value) {
-      return Array.isArray(value) ? value : [];
-    }
-
-    function delay(ms) {
+    function delay(ms){
       return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    async function fetchJson(url) {
-      const res = await fetch(url, { method: "GET" });
+    async function fetchJson(url){
+      const res = await fetch(url);
       if (!res.ok) {
         throw new Error(`HTTP ${res.status} sur ${url}`);
       }
       return res.json();
     }
 
-    function chunk(arr, size) {
+    // =============================
+    // API
+    // =============================
+    async function fetchQuote(symbol){
+      const url = `https://financialmodelingprep.com/stable/quote?symbol=${encodeURIComponent(symbol)}&apikey=${API_KEY}`;
+      const data = await fetchJson(url);
+      return Array.isArray(data) ? data[0] : null;
+    }
+
+    async function fetchAllQuotes(symbols){
       const out = [];
-      for (let i = 0; i < arr.length; i += size) {
-        out.push(arr.slice(i, i + size));
+      for (const symbol of symbols) {
+        try {
+          const q = await fetchQuote(symbol);
+          if (q) out.push(q);
+        } catch (err) {
+          console.warn("Erreur quote", symbol, err);
+        }
+        await delay(120);
       }
       return out;
     }
 
     // =============================
-    // FMP ENDPOINTS
+    // NORMALIZATION
     // =============================
-    async function fetchBatchQuotes(symbols) {
-      const groups = chunk(symbols, 5);
-      const results = [];
-
-      // Séquentiel pour rester gentil avec les limites API
-      for (const group of groups) {
-        const joined = group.join(",");
-        const url = `https://financialmodelingprep.com/stable/quotes/${symbols}?apikey=${API_KEY}`;
-        const data = await fetchJson(url);
-        results.push(...safeArray(data));
-        await delay(150);
-      }
-
-      return results;
-    }
-
-    async function fetchShareFloat(symbol) {
-      const url = `https://financialmodelingprep.com/stable/shares-float?symbol=${encodeURIComponent(symbol)}&apikey=${API_KEY}`;
-      const data = await fetchJson(url);
-      return safeArray(data)[0] || null;
-    }
-
-    async function fetchIntraday5m(symbol) {
-      const url = `https://financialmodelingprep.com/stable/historical-chart/5min?symbol=${encodeURIComponent(symbol)}&apikey=${API_KEY}`;
-      const data = await fetchJson(url);
-      return safeArray(data);
-    }
-
-    async function fetchStockNews(symbol, limit = 5) {
-      const url = `https://financialmodelingprep.com/stable/quote?symbol=AAPL,AMD,AMZN,TSLA&apikey=TA_CLE}`;
-      const data = await fetchJson(url);
-      return safeArray(data);
-    }
-
-    // =============================
-    // DATA NORMALIZATION
-    // =============================
-    function normalizeQuote(raw) {
-      // FMP batch quote fields can vary slightly by endpoint version.
-      const symbol = raw.symbol || raw.ticker || raw.code;
-      const price = Number(raw.price ?? raw.lastPrice ?? raw.previousClose ?? NaN);
-      const previousClose = Number(raw.previousClose ?? raw.prevClose ?? NaN);
-      const volume = Number(raw.volume ?? raw.dayVolume ?? 0);
-      const changePct = Number(raw.changesPercentage ?? raw.changePercentage ?? 0);
+    function normalizeQuote(raw){
+      if (!raw) return null;
 
       return {
-        symbol,
-        price,
-        previousClose,
-        volume,
-        changePct,
-        name: raw.name || symbol,
-        exchange: raw.exchange || "",
-        marketCap: Number(raw.marketCap ?? 0),
+        symbol: raw.symbol || "",
+        price: Number(raw.price ?? NaN),
+        previousClose: Number(raw.previousClose ?? NaN),
+        changePct: Number(raw.changesPercentage ?? raw.changePercentage ?? raw.changePercent ?? 0),
+        volume: Number(raw.volume ?? 0),
         dayLow: Number(raw.dayLow ?? NaN),
-        dayHigh: Number(raw.dayHigh ?? NaN)
+        dayHigh: Number(raw.dayHigh ?? NaN),
+        open: Number(raw.open ?? NaN)
       };
     }
 
-    function latestBarsToday(bars) {
-      // Assume descending most-recent-first if API returns that way; sort to be safe.
-      const sorted = [...bars].sort((a, b) => new Date(a.date) - new Date(b.date));
-      return sorted.slice(-24); // recent window only
+    // =============================
+    // SCORING LOGIC
+    // =============================
+    function computeGapPct(row){
+      if (Number.isFinite(row.changePct)) return row.changePct;
+      if (Number.isFinite(row.price) && Number.isFinite(row.previousClose) && row.previousClose !== 0) {
+        return ((row.price - row.previousClose) / row.previousClose) * 100;
+      }
+      return 0;
     }
 
-    function computeCompression(bars) {
-      if (bars.length < 4) return false;
+    function computeVolRel(row){
+      // Proxy simple et robuste pour la version gratuite
+      // À ajuster plus tard si on ajoute une vraie moyenne historique
+      if (!Number.isFinite(row.volume)) return 0;
 
-      const recent = bars.slice(-4);
-      const highs = recent.map(b => Number(b.high));
-      const lows = recent.map(b => Number(b.low));
-      const closes = recent.map(b => Number(b.close));
-
-      const range = Math.max(...highs) - Math.min(...lows);
-      const avgClose = closes.reduce((a,b)=>a+b,0) / closes.length || 1;
-
-      // structure "calme" et range relativement serré
-      return (range / avgClose) <= 0.0125;
+      if (row.volume >= 20000000) return 3.0;
+      if (row.volume >= 10000000) return 2.5;
+      if (row.volume >= 5000000)  return 2.0;
+      if (row.volume >= 2000000)  return 1.6;
+      if (row.volume >= 800000)   return 1.3;
+      return 0.8;
     }
 
-    function computeMomentumAlive(bars) {
-      if (bars.length < 3) return false;
-
-      const recent = bars.slice(-3);
-      const first = Number(recent[0].close);
-      const last = Number(recent[recent.length - 1].close);
-      const vol = recent.reduce((acc, b) => acc + Number(b.volume || 0), 0);
-
-      return last >= first * 0.995 && vol > 0;
+    function computeFloatPct(row){
+      // Proxy visuel pour ne pas casser le plan gratuit
+      // basé sur volume actuel
+      if (!Number.isFinite(row.volume) || row.volume <= 0) return 0;
+      if (row.volume >= 20000000) return 8.0;
+      if (row.volume >= 10000000) return 5.5;
+      if (row.volume >= 5000000)  return 3.8;
+      if (row.volume >= 2000000)  return 2.4;
+      if (row.volume >= 800000)   return 1.4;
+      return 0.6;
     }
 
-    function computePremarketRangeHold(bars, currentPrice) {
-      if (bars.length < 3 || !Number.isFinite(currentPrice)) return false;
-
-      const highs = bars.map(b => Number(b.high));
-      const lows = bars.map(b => Number(b.low));
-      const hi = Math.max(...highs);
-      const lo = Math.min(...lows);
-      const range = hi - lo;
-
-      if (!Number.isFinite(range) || range <= 0) return false;
-
-      const pos = (currentPrice - lo) / range;
+    function computeHold(row){
+      if (!Number.isFinite(row.price) || !Number.isFinite(row.dayLow) || !Number.isFinite(row.dayHigh)) return false;
+      const range = row.dayHigh - row.dayLow;
+      if (range <= 0) return false;
+      const pos = (row.price - row.dayLow) / range;
       return pos >= 0.50;
     }
 
-    function guessOpenReady(score, volRel, hold, compression, momentumAlive) {
-      if (score >= 4 && volRel >= 1.5 && hold && momentumAlive) {
-        return "🟢GO";
-      }
-      if (score >= 3 && (compression || hold)) {
-        return "🟡WAIT";
-      }
+    function computeCompression(row){
+      if (!Number.isFinite(row.dayLow) || !Number.isFinite(row.dayHigh) || !Number.isFinite(row.price)) return false;
+      const rangePct = ((row.dayHigh - row.dayLow) / row.price) * 100;
+      return rangePct <= 2.0;
+    }
+
+    function computeMomentumAlive(gapPct, volRel){
+      return absPct(gapPct) >= 2 && volRel >= 1.3;
+    }
+
+    function hasInstitutionalVolume(volRel, hold, compression){
+      return volRel >= 2.0 && hold && (compression || volRel >= 2.5);
+    }
+
+    function computeActionSignal(score, volRel, hold, momentumAlive){
+      if (score >= 4 && volRel >= 1.5 && hold && momentumAlive) return "🟢GO";
+      if (score >= 3) return "🟡WAIT";
       return "🔴STOP";
     }
 
-    function actionRank(signal) {
-      if (signal === "🟢GO") return 3;
-      if (signal === "🟡WAIT") return 2;
-      return 1;
-    }
-
-    // =============================
-    // SCORING
-    // =============================
-    function computeVolRel(dayVolume, bars) {
-      // Proxy navigateur:
-      // compare le volume actuel au volume moyen récent des 5-min bars.
-      if (!bars.length || !dayVolume) return 0;
-
-      const recentBars = bars.slice(-12); // ~1h récente
-      const avg5m = recentBars.reduce((a,b)=>a + Number(b.volume || 0), 0) / Math.max(recentBars.length, 1);
-      if (!avg5m) return 0;
-
-      // Approximation volontaire pour usage mobile
-      const projected = avg5m * 12;
-      return projected > 0 ? dayVolume / projected : 0;
-    }
-
-    function computeFloatPct(volume, floatShares) {
-      if (!floatShares || !volume) return 0;
-      return (volume / floatShares) * 100;
-    }
-
-    function hasInstitutionalVolume(volRel, floatPct, hold, compression) {
-      return volRel >= 2.0 && hold && (compression || floatPct >= 2);
-    }
-
-    function computeScore({ gapPct, volRel, hold, compression, momentumAlive }) {
+    function computeScore({ gapPct, volRel, hold, compression, momentumAlive }){
       let score = 0;
-
       if (absPct(gapPct) >= 3) score += 1;
       if (volRel >= 1.5) score += 1;
       if (hold) score += 1;
       if (compression) score += 1;
       if (momentumAlive) score += 1;
-
       return Math.max(0, Math.min(5, score));
     }
 
-    function passesLiquidityFilter(row) {
-      return (
-        row.price >= 5 &&
-        row.volume >= 300000 &&
-        row.volRel >= 1.2
-      );
+    function passesLiquidityFilter(row){
+      return row.price >= 5 && row.volume >= 300000;
     }
 
-    function sectionName(score) {
-      if (score >= 4) return "TOP";
-      if (score === 3) return "WATCH";
-      return "IGNORE";
+    function enrichRow(row){
+      const gapPct = computeGapPct(row);
+      const volRel = computeVolRel(row);
+      const floatPct = computeFloatPct(row);
+      const hold = computeHold(row);
+      const compression = computeCompression(row);
+      const momentumAlive = computeMomentumAlive(gapPct, volRel);
+      const score = computeScore({ gapPct, volRel, hold, compression, momentumAlive });
+      const actionSignal = computeActionSignal(score, volRel, hold, momentumAlive);
+      const institutional = hasInstitutionalVolume(volRel, hold, compression);
+
+      return {
+        ...row,
+        gapPct,
+        volRel,
+        floatPct,
+        hold,
+        compression,
+        momentumAlive,
+        score,
+        actionSignal,
+        institutional,
+        sector: SECTOR_MAP[row.symbol] || "GENERAL"
+      };
     }
 
-    function summarizeRow(row) {
+    function assignSectorLeaders(rows){
+      const bestBySector = new Map();
+
+      for (const row of rows) {
+        const power =
+          row.score * 10 +
+          row.volRel * 3 +
+          absPct(row.gapPct) +
+          (row.institutional ? 3 : 0);
+
+        if (!bestBySector.has(row.sector) || power > bestBySector.get(row.sector).power) {
+          bestBySector.set(row.sector, { symbol: row.symbol, power });
+        }
+      }
+
+      return rows.map(row => ({
+        ...row,
+        isSectorLeader: bestBySector.get(row.sector)?.symbol === row.symbol
+      }));
+    }
+
+    function chooseMarketContext(spyRow, qqqRow){
+      const spy = Number(spyRow?.gapPct ?? 0);
+      const qqq = Number(qqqRow?.gapPct ?? 0);
+
+      if (spy > 0 && qqq > 0) {
+        return { dot:"🟢", className:"context-green" };
+      }
+      if ((spy >= 0 && qqq < 0) || (spy < 0 && qqq >= 0) || (Math.abs(spy) < 0.3 && Math.abs(qqq) < 0.3)) {
+        return { dot:"🟡", className:"context-yellow" };
+      }
+      return { dot:"🔴", className:"context-red" };
+    }
+
+    function chooseKing(rows){
+      const eligible = rows.filter(r => r.score >= 4);
+
+      if (!eligible.length) return null;
+
+      return [...eligible].sort((a, b) => {
+        const scoreA =
+          a.score * 10 +
+          a.volRel * 3 +
+          absPct(a.gapPct) +
+          (a.institutional ? 4 : 0) +
+          (a.isSectorLeader ? 3 : 0) +
+          (a.hold ? 2 : 0);
+
+        const scoreB =
+          b.score * 10 +
+          b.volRel * 3 +
+          absPct(b.gapPct) +
+          (b.institutional ? 4 : 0) +
+          (b.isSectorLeader ? 3 : 0) +
+          (b.hold ? 2 : 0);
+
+        return scoreB - scoreA;
+      })[0];
+    }
+
+    // =============================
+    // RENDER
+    // =============================
+    function flagsForRow(row){
+      const flags = [];
+      if (row.institutional) flags.push("💰");
+      if (row.isSectorLeader) flags.push("🏁");
+      return flags.join("  ");
+    }
+
+    function summarizeRow(row){
       const parts = [
         `Gap ${fmt1(absPct(row.gapPct))}%`,
         `Vol ${fmt1(row.volRel)}x`,
@@ -468,83 +501,7 @@
       return parts.join(" | ");
     }
 
-    function chooseMarketContext(spyQuote, qqqQuote, vixQuote) {
-      const spy = Number(spyQuote?.changePct ?? 0);
-      const qqq = Number(qqqQuote?.changePct ?? 0);
-      const vix = Number(vixQuote?.changePct ?? 0);
-
-      if (spy > 0 && qqq > 0 && vix <= 0) {
-        return { dot: "🟢", className: "context-green", label: "favorable" };
-      }
-      if ((spy >= 0 && qqq < 0) || (spy < 0 && qqq >= 0) || (vix > 0 && vix < 2)) {
-        return { dot: "🟡", className: "context-yellow", label: "mixte" };
-      }
-      return { dot: "🔴", className: "context-red", label: "risqué" };
-    }
-
-    function pickSectorLeaders(rows) {
-      const best = new Map();
-
-      for (const row of rows) {
-        const leaderPower =
-          row.score * 10 +
-          row.volRel * 2 +
-          absPct(row.gapPct) +
-          (row.institutional ? 3 : 0) +
-          actionRank(row.actionSignal);
-
-        if (!best.has(row.sector) || leaderPower > best.get(row.sector).power) {
-          best.set(row.sector, { symbol: row.symbol, power: leaderPower });
-        }
-      }
-
-      return rows.map(row => ({
-        ...row,
-        isSectorLeader: best.get(row.sector)?.symbol === row.symbol
-      }));
-    }
-
-    function chooseKing(rows) {
-      const eligible = rows.filter(r => r.score >= 4);
-
-      if (!eligible.length) return null;
-
-      const ranked = [...eligible].sort((a, b) => {
-        const kingA =
-          a.score * 10 +
-          a.volRel * 3 +
-          absPct(a.gapPct) +
-          (a.institutional ? 4 : 0) +
-          (a.isSectorLeader ? 3 : 0) +
-          actionRank(a.actionSignal) * 3 +
-          (a.hold ? 2 : 0);
-
-        const kingB =
-          b.score * 10 +
-          b.volRel * 3 +
-          absPct(b.gapPct) +
-          (b.institutional ? 4 : 0) +
-          (b.isSectorLeader ? 3 : 0) +
-          actionRank(b.actionSignal) * 3 +
-          (b.hold ? 2 : 0);
-
-        return kingB - kingA;
-      });
-
-      return ranked[0];
-    }
-
-    // =============================
-    // RENDER
-    // =============================
-    function flagsForRow(row) {
-      const flags = [];
-      if (row.institutional) flags.push("💰");
-      if (row.isSectorLeader) flags.push("🏁");
-      return flags.join("  ");
-    }
-
-    function renderRows(rows) {
+    function renderRows(rows){
       return rows.map(row => `
         <div class="row">
           <div class="ticker">${row.symbol}</div>
@@ -555,8 +512,9 @@
       `).join("");
     }
 
-    function renderOutput(rows, context) {
+    function renderOutput(rows, context){
       const output = document.getElementById("output");
+
       const king = chooseKing(rows);
       const rest = rows.filter(r => !king || r.symbol !== king.symbol);
 
@@ -602,84 +560,9 @@
     }
 
     // =============================
-    // MAIN SCAN
+    // MAIN
     // =============================
-    async function buildSymbolRecord(symbol, quoteMap, marketNewsEnabled = true) {
-      const quote = quoteMap.get(symbol);
-      if (!quote) return null;
-
-      const [floatRaw, barsRaw, newsRaw] = await Promise.all([
-        fetchShareFloat(symbol).catch(() => null),
-        fetchIntraday5m(symbol).catch(() => []),
-        marketNewsEnabled ? fetchStockNews(symbol, 3).catch(() => []) : Promise.resolve([])
-      ]);
-
-      const bars = latestBarsToday(barsRaw);
-
-      const floatShares = Number(
-        floatRaw?.floatShares ??
-        floatRaw?.freeFloat ??
-        floatRaw?.sharesFloat ??
-        0
-      );
-
-      const volRel = computeVolRel(quote.volume, bars);
-      const floatPct = computeFloatPct(quote.volume, floatShares);
-      const hold = computePremarketRangeHold(bars, quote.price);
-      const compression = computeCompression(bars);
-      const momentumAlive = computeMomentumAlive(bars);
-      const score = computeScore({
-        gapPct: quote.changePct,
-        volRel,
-        hold,
-        compression,
-        momentumAlive
-      });
-
-      const actionSignal = guessOpenReady(score, volRel, hold, compression, momentumAlive);
-      const institutional = hasInstitutionalVolume(volRel, floatPct, hold, compression);
-
-      return {
-        symbol: quote.symbol,
-        price: quote.price,
-        gapPct: quote.changePct,
-        volume: quote.volume,
-        previousClose: quote.previousClose,
-        volRel,
-        floatPct,
-        floatShares,
-        hold,
-        compression,
-        momentumAlive,
-        score,
-        actionSignal,
-        institutional,
-        sector: inferSector(symbol, newsRaw),
-        hasNews: safeArray(newsRaw).length > 0
-      };
-    }
-
-    function inferSector(symbol, newsItems) {
-      // Version légère pour rester robuste côté browser.
-      // On garde quelques regroupements utiles.
-      const map = {
-        NVDA: "SEMI", AMD: "SEMI", AVGO: "SEMI", MRVL: "SEMI", MU: "SEMI", QCOM: "SEMI",
-        TSLA: "EV", UBER: "TRANSPORT",
-        XOM: "ENERGY", CVX: "ENERGY",
-        META: "TECH", GOOGL: "TECH", AAPL: "TECH", AMZN: "TECH", NFLX: "TECH",
-        PLTR: "AI", SMCI: "AI", COIN: "CRYPTO", JPM: "BANKS", BABA: "CHINA"
-      };
-
-      if (map[symbol]) return map[symbol];
-
-      const text = safeArray(newsItems).map(n => `${n.title || ""} ${n.text || ""}`.toUpperCase()).join(" ");
-      if (text.includes("SEMICONDUCTOR") || text.includes("CHIP")) return "SEMI";
-      if (text.includes("OIL") || text.includes("ENERGY")) return "ENERGY";
-      if (text.includes("BANK")) return "BANKS";
-      return "GENERAL";
-    }
-
-    async function scanMarket() {
+    async function scanMarket(){
       const btn = document.getElementById("scanBtn");
       const status = document.getElementById("status");
       const output = document.getElementById("output");
@@ -689,71 +572,42 @@
       output.innerHTML = "";
 
       try {
-        if (!API_KEY || API_KEY.includes("TON_API_KEY")) {
+        if (!API_KEY || API_KEY.includes("u1ujNxMOWm5fGfePMeOdrn3teLy8fzNW")) {
           throw new Error("Ajoute d’abord ta clé API FMP dans la constante API_KEY.");
         }
 
-        // 1) Quotes universe + market context
-        const [rawQuotes, rawMarketQuotes] = await Promise.all([
-          fetchBatchQuotes(UNIVERSE),
-          fetchBatchQuotes(MARKET_SYMBOLS)
+        const [marketRaw, rawQuotes] = await Promise.all([
+          fetchAllQuotes(MARKET_SYMBOLS),
+          fetchAllQuotes(UNIVERSE)
         ]);
 
-        const quoteMap = new Map(
-          rawQuotes
-            .map(normalizeQuote)
-            .filter(q => q.symbol)
-            .map(q => [q.symbol, q])
-        );
+        const marketRows = marketRaw.map(normalizeQuote).filter(Boolean).map(enrichRow);
+        let rows = rawQuotes.map(normalizeQuote).filter(Boolean).map(enrichRow);
 
-        const marketMap = new Map(
-          rawMarketQuotes
-            .map(normalizeQuote)
-            .filter(q => q.symbol)
-            .map(q => [q.symbol, q])
-        );
-
-        const context = chooseMarketContext(
-          marketMap.get("SPY"),
-          marketMap.get("QQQ"),
-          marketMap.get("^VIX")
-        );
-
-        // 2) Enrich each symbol
-        const records = [];
-        for (const symbol of UNIVERSE) {
-          try {
-            const rec = await buildSymbolRecord(symbol, quoteMap, true);
-            if (rec) records.push(rec);
-            await delay(120);
-          } catch (e) {
-            console.warn("Erreur symbole", symbol, e);
-          }
-        }
-
-        // 3) Filter + sector leaders + sort
-        let rows = records.filter(passesLiquidityFilter);
-        rows = pickSectorLeaders(rows);
+        rows = rows.filter(passesLiquidityFilter);
+        rows = assignSectorLeaders(rows);
 
         rows.sort((a, b) => {
-          const rankA =
+          const powerA =
             a.score * 10 +
+            a.volRel * 3 +
+            absPct(a.gapPct) +
             (a.institutional ? 4 : 0) +
-            (a.isSectorLeader ? 3 : 0) +
-            actionRank(a.actionSignal) * 3 +
-            a.volRel +
-            absPct(a.gapPct);
+            (a.isSectorLeader ? 3 : 0);
 
-          const rankB =
+          const powerB =
             b.score * 10 +
+            b.volRel * 3 +
+            absPct(b.gapPct) +
             (b.institutional ? 4 : 0) +
-            (b.isSectorLeader ? 3 : 0) +
-            actionRank(b.actionSignal) * 3 +
-            b.volRel +
-            absPct(b.gapPct);
+            (b.isSectorLeader ? 3 : 0);
 
-          return rankB - rankA;
+          return powerB - powerA;
         });
+
+        const spyRow = marketRows.find(r => r.symbol === "SPY");
+        const qqqRow = marketRows.find(r => r.symbol === "QQQ");
+        const context = chooseMarketContext(spyRow, qqqRow);
 
         renderOutput(rows, context);
         status.textContent = `Scan terminé : ${rows.length} titres retenus.`;
@@ -770,7 +624,6 @@
       }
     }
 
-    // Auto-run
     scanMarket();
   </script>
 </body>
