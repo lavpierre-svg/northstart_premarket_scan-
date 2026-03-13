@@ -24,12 +24,14 @@ padding:14px 20px;
 font-size:18px;
 border-radius:8px;
 margin:10px;
+cursor:pointer;
 }
 
 table{
 margin:auto;
 margin-top:20px;
 border-collapse:collapse;
+width:auto;
 }
 
 td,th{
@@ -37,9 +39,32 @@ padding:8px 14px;
 border-bottom:1px solid #333;
 }
 
+th{
+font-weight:bold;
+}
+
 .green{color:#00ff9c}
 .red{color:#ff5a5a}
 
+@media (max-width: 700px){
+  body{
+    padding:12px;
+  }
+
+  h1{
+    font-size:24px;
+  }
+
+  td,th{
+    padding:6px 8px;
+    font-size:14px;
+  }
+
+  button{
+    font-size:16px;
+    padding:12px 16px;
+  }
+}
 </style>
 </head>
 
@@ -51,9 +76,11 @@ border-bottom:1px solid #333;
 
 <table id="table">
 <tr>
-<th>Ticker</th>
-<th>Price</th>
-<th>Gap %</th>
+<th>Téléscripteur</th>
+<th>Prix</th>
+<th>Écart %</th>
+<th>Direction</th>
+<th>Force</th>
 </tr>
 </table>
 
@@ -63,61 +90,86 @@ const tickers = [
 "MU","MRVL","AVGO","AAPL","XOM","CVX"
 ]
 
-async function scan(){
-
-let results=[]
-
-const requests = tickers.map(async (t) => {
-  try{
-    let url=`https://autumn-dream-7e4e.lavpierre.workers.dev/?symbol=${t}`
-
-    let r = await fetch(url)
-    let data = await r.json()
-
-    let result = data.chart.result[0]
-    let meta = result.meta
-    let quote = result.indicators.quote[0]
-    let close = quote.close
-
-    let today = meta.regularMarketPrice
-    let yesterday = meta.chartPreviousClose
-
-    let gap = 0
-    if (yesterday && yesterday !== 0) {
-      gap = ((today - yesterday) / yesterday) * 100
-    }
-
-    results.push({
-      ticker: t,
-      price: today,
-      gap: gap
-    })
-
-  }catch(e){
-    console.log("Erreur sur", t, e)
-  }
-})
-
-await Promise.all(requests)
-
-results.sort((a,b)=>Math.abs(b.gap)-Math.abs(a.gap))
-
-let table=document.getElementById("table")
-
-table.innerHTML="<tr><th>Téléscripteur</th><th>Prix</th><th>Écart %</th></tr>"
-
-for(let r of results){
-
-  let color = r.gap >= 0 ? "green" : "red"
-
-  table.innerHTML += `
-  <tr>
-    <td>${r.ticker}</td>
-    <td>${r.price.toFixed(2)}</td>
-    <td class="${color}">${r.gap.toFixed(2)}%</td>
-  </tr>
-  `
+function getForce(absGap){
+  if (absGap >= 5) return "EXPLOSIF"
+  if (absGap >= 3) return "FORT"
+  if (absGap >= 1.5) return "ACTIF"
+  return "FAIBLE"
 }
 
+function getDirection(gap){
+  if (gap > 0) return "HAUSSE"
+  if (gap < 0) return "BAISSE"
+  return "NEUTRE"
+}
+
+async function scan(){
+  let results = []
+
+  const requests = tickers.map(async (t) => {
+    try{
+      let url = `https://autumn-dream-7e4e.lavpierre.workers.dev/?symbol=${t}`
+
+      let r = await fetch(url)
+      let data = await r.json()
+
+      if (!data.chart || !data.chart.result || !data.chart.result[0]) return
+
+      let result = data.chart.result[0]
+      let meta = result.meta || {}
+
+      let price = meta.regularMarketPrice
+      let previous = meta.chartPreviousClose
+
+      if (price == null || previous == null || previous === 0) return
+
+      let gap = ((price - previous) / previous) * 100
+      let absGap = Math.abs(gap)
+
+      results.push({
+        ticker: t,
+        price: price,
+        gap: gap,
+        direction: getDirection(gap),
+        force: getForce(absGap)
+      })
+
+    }catch(e){
+      console.log("Erreur sur", t, e)
+    }
+  })
+
+  await Promise.all(requests)
+
+  results.sort((a,b) => Math.abs(b.gap) - Math.abs(a.gap))
+
+  let table = document.getElementById("table")
+
+  table.innerHTML = `
+    <tr>
+      <th>Téléscripteur</th>
+      <th>Prix</th>
+      <th>Écart %</th>
+      <th>Direction</th>
+      <th>Force</th>
+    </tr>
+  `
+
+  for(let r of results){
+    let color = r.gap >= 0 ? "green" : "red"
+
+    table.innerHTML += `
+      <tr>
+        <td>${r.ticker}</td>
+        <td>${r.price.toFixed(2)}</td>
+        <td class="${color}">${r.gap.toFixed(2)}%</td>
+        <td class="${color}">${r.direction}</td>
+        <td>${r.force}</td>
+      </tr>
+    `
+  }
 }
 </script>
+
+</body>
+</html>
