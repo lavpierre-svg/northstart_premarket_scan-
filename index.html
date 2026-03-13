@@ -166,16 +166,24 @@
       color:var(--muted);
     }
 
- .market-context{
+.market-context{
   margin-top:20px;
-  text-align:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
   color:#d8e1ef;
   font-weight:800;
   font-size:15px;
   letter-spacing:.3px;
-  padding-top:10px;
-  border-top:1px solid #31415f;
-  white-space: nowrap;
+}
+
+.market-context::before,
+.market-context::after{
+  content:"";
+  flex:1;
+  height:1px;
+  background:#31415f;
 }
     
 
