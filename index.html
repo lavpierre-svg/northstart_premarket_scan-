@@ -1,278 +1,480 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NorthStar PreMarket</title>
-
-<style>
-body{
-background:#0f1115;
-color:white;
-font-family:Arial;
-text-align:center;
-padding:20px;
-}
-
-h1{
-color:#3dd6ff;
-margin-bottom:8px;
-}
-
-#summary{
-margin:10px 0 18px 0;
-font-size:16px;
-}
-
-button{
-background:#3dd6ff;
-border:none;
-padding:14px 20px;
-font-size:18px;
-border-radius:8px;
-margin:10px;
-cursor:pointer;
-}
-
-table{
-margin:auto;
-margin-top:20px;
-border-collapse:collapse;
-width:auto;
-}
-
-td,th{
-padding:8px 14px;
-border-bottom:1px solid #333;
-}
-
-.green{color:#00ff9c}
-.red{color:#ff5a5a}
-.gray{color:#bbbbbb}
-.yellow{color:#ffd166}
-
-.hot{
-font-weight:bold;
-color:#00ff9c;
-}
-
-.watch{
-font-weight:bold;
-color:#ffd166;
-}
-
-.ignore{
-color:#bbbbbb;
-}
-
-@media (max-width: 700px){
-  body{
-    padding:12px;
-  }
-
-  h1{
-    font-size:24px;
-  }
-
-  td,th{
-    padding:6px 8px;
-    font-size:14px;
-  }
-
-  button{
-    font-size:16px;
-    padding:12px 16px;
-  }
-
-  #summary{
-    font-size:14px;
-  }
-}
-</style>
-</head>
-
-<body>
-
-<h1>NorthStar PreMarket</h1>
-
-<div id="summary">Clique sur SCAN MARKET</div>
-
-<button onclick="scan()">SCAN MARKET</button>
-
-<table id="table">
-<tr>
-<th>Ticker</th>
-<th>Prix</th>
-<th>Gap %</th>
-<th>Session</th>
-<th>Force</th>
-<th>Vol Rel</th>
-<th>Vol Force</th>
-<th>Radar</th>
-</tr>
-</table>
-
-<script>
-const tickers = [
-"NVDA","TSLA","AMD","PLTR","SMCI",
-"MU","MRVL","AVGO","AAPL","XOM","CVX"
-]
-
-function getForce(absGap){
-  if(absGap >= 5) return "EXPLOSIF"
-  if(absGap >= 3) return "FORT"
-  if(absGap >= 1.5) return "ACTIF"
-  return "FAIBLE"
-}
-
-function getVolForce(volRel){
-  if(volRel >= 5) return "EXPLOSIF"
-  if(volRel >= 3) return "FORT"
-  if(volRel >= 1.5) return "ACTIF"
-  return "FAIBLE"
-}
-
-function avg(arr){
-  const clean = arr.filter(v => v != null && !isNaN(v) && v > 0)
-  if(clean.length === 0) return 0
-  return clean.reduce((a,b) => a + b, 0) / clean.length
-}
-
-function getRadar(absGap, volRel){
-  if(absGap >= 3 && volRel >= 1.5) return "HOT"
-  if(absGap >= 2 || volRel >= 1.2) return "WATCH"
-  return "IGNORE"
-}
-
-function radarRank(radar){
-  if(radar === "HOT") return 3
-  if(radar === "WATCH") return 2
-  return 1
-}
-
-async function scan(){
-  let results = []
-
-  const requests = tickers.map(async (t) => {
-    try{
-      let url = `https://autumn-dream-7e4e.lavpierre.workers.dev/?symbol=${t}&range=1mo&interval=1d`
-
-      let r = await fetch(url)
-      let data = await r.json()
-
-      if(!data.chart || !data.chart.result || !data.chart.result[0]) return
-
-      let result = data.chart.result[0]
-      let meta = result.meta || {}
-      let quote = result.indicators && result.indicators.quote ? result.indicators.quote[0] : null
-      if(!quote) return
-
-      let previous = meta.chartPreviousClose
-      if(!previous) previous = meta.previousClose
-      if(previous == null || previous === 0) return
-
-      let price = null
-      let session = "REG"
-
-      if(meta.preMarketPrice != null && meta.preMarketPrice > 0){
-        price = meta.preMarketPrice
-        session = "PRE"
-      }else if(meta.postMarketPrice != null && meta.postMarketPrice > 0){
-        price = meta.postMarketPrice
-        session = "POST"
-      }else if(meta.regularMarketPrice != null){
-        price = meta.regularMarketPrice
-        session = "REG"
-      }
-
-      if(price == null) return
-
-      let gap = ((price - previous) / previous) * 100
-      let absGap = Math.abs(gap)
-
-      let volumes = quote.volume || []
-      let todayVolume = volumes.length ? volumes[volumes.length - 1] : 0
-      let pastVolumes = volumes.slice(Math.max(0, volumes.length - 11), volumes.length - 1)
-      let avgVolume = avg(pastVolumes)
-
-      let volRel = 0
-      if(avgVolume > 0 && todayVolume > 0){
-        volRel = todayVolume / avgVolume
-      }
-
-      let radar = getRadar(absGap, volRel)
-
-      results.push({
-        ticker: t,
-        price: price,
-        gap: gap,
-        session: session,
-        force: getForce(absGap),
-        volRel: volRel,
-        volForce: getVolForce(volRel),
-        radar: radar
-      })
-
-    }catch(e){
-      console.log("Erreur sur", t, e)
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🚀 NORTHSTAR PREMARKET RADAR</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#121a2b;
+      --panel-2:#0f1726;
+      --text:#e7edf7;
+      --muted:#95a3ba;
+      --green:#22c55e;
+      --yellow:#facc15;
+      --red:#ef4444;
+      --blue:#60a5fa;
+      --border:#24314a;
+      --gold:#fbbf24;
     }
-  })
 
-  await Promise.all(requests)
+    *{box-sizing:border-box}
 
-  results.sort((a,b) => {
-    const radarDiff = radarRank(b.radar) - radarRank(a.radar)
-    if(radarDiff !== 0) return radarDiff
-    return Math.abs(b.gap) - Math.abs(a.gap)
-  })
+    body{
+      margin:0;
+      padding:18px 14px 28px;
+      background:linear-gradient(180deg,#09111d 0%, #0b1220 100%);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    }
 
-  let hotCount = results.filter(r => r.radar === "HOT").length
-  let watchCount = results.filter(r => r.radar === "WATCH").length
-  let ignoreCount = results.filter(r => r.radar === "IGNORE").length
+    .wrap{
+      max-width:720px;
+      margin:0 auto;
+    }
 
-  document.getElementById("summary").innerHTML =
-    `<span class="hot">HOT: ${hotCount}</span> | ` +
-    `<span class="watch">WATCH: ${watchCount}</span> | ` +
-    `<span class="ignore">IGNORE: ${ignoreCount}</span>`
+    .card{
+      background:rgba(18,26,43,.92);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:16px 14px 18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.28);
+      backdrop-filter: blur(10px);
+    }
 
-  let table = document.getElementById("table")
+    .title{
+      text-align:center;
+      font-weight:800;
+      font-size:20px;
+      letter-spacing:.3px;
+      margin:2px 0 10px;
+    }
 
-  table.innerHTML = `
-    <tr>
-      <th>Ticker</th>
-      <th>Prix</th>
-      <th>Gap %</th>
-      <th>Session</th>
-      <th>Force</th>
-      <th>Vol Rel</th>
-      <th>Vol Force</th>
-      <th>Radar</th>
-    </tr>
-  `
+    .divider{
+      height:1px;
+      background:linear-gradient(90deg,transparent, #31415f 15%, #31415f 85%, transparent);
+      margin:8px 0 14px;
+    }
 
-  for(let r of results){
-    let gapColor = r.gap >= 0 ? "green" : "red"
-    let sessionColor = r.session === "PRE" ? "green" : (r.session === "POST" ? "red" : "gray")
-    let volColor = r.volRel >= 1.5 ? "green" : "gray"
+    .actions{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
 
-    let radarClass = "ignore"
-    if(r.radar === "HOT") radarClass = "hot"
-    if(r.radar === "WATCH") radarClass = "watch"
+    button{
+      appearance:none;
+      border:none;
+      border-radius:12px;
+      padding:12px 16px;
+      font-size:15px;
+      font-weight:800;
+      color:#06101b;
+      background:linear-gradient(180deg,#7dd3fc,#38bdf8);
+      box-shadow:0 6px 16px rgba(56,189,248,.22);
+    }
 
-    table.innerHTML += `
-      <tr>
-        <td>${r.ticker}</td>
-        <td>${r.price.toFixed(2)}</td>
-        <td class="${gapColor}">${r.gap.toFixed(2)}%</td>
-        <td class="${sessionColor}">${r.session}</td>
-        <td>${r.force}</td>
-        <td class="${volColor}">${r.volRel.toFixed(2)}x</td>
-        <td>${r.volForce}</td>
-        <td class="${radarClass}">${r.radar}</td>
-      </tr>
-    `
-  }
-}
-</script>
+    button:active{
+      transform:translateY(1px);
+    }
 
+    .status{
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      min-height:18px;
+      margin-bottom:10px;
+    }
+
+    .section-title{
+      color:#cdd8ea;
+      font-weight:800;
+      font-size:14px;
+      letter-spacing:.6px;
+      margin:18px 0 10px;
+      text-transform:uppercase;
+    }
+
+    .king-box{
+      background:linear-gradient(180deg,rgba(251,191,36,.08),rgba(251,191,36,.03));
+      border:1px solid rgba(251,191,36,.28);
+      border-radius:16px;
+      padding:12px;
+      margin-bottom:18px;
+    }
+
+    .king-title{
+      text-align:center;
+      font-weight:900;
+      color:var(--gold);
+      margin-bottom:12px;
+      font-size:16px;
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns:80px 1fr auto;
+      align-items:center;
+      gap:10px;
+      padding:10px 6px;
+      border-radius:12px;
+      background:rgba(255,255,255,.02);
+      margin-bottom:10px;
+    }
+
+    .row:last-child{
+      margin-bottom:0;
+    }
+
+    .ticker{
+      font-weight:900;
+      font-size:17px;
+      letter-spacing:.3px;
+    }
+
+    .score{
+      font-size:18px;
+      line-height:1;
+      letter-spacing:1px;
+      white-space:nowrap;
+    }
+
+    .flags{
+      white-space:nowrap;
+      font-size:18px;
+      font-weight:800;
+    }
+
+    .summary{
+      color:#d7e1f0;
+      font-size:13px;
+      line-height:1.55;
+      margin-top:10px;
+      text-align:center;
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .muted{
+      color:var(--muted);
+    }
+
+    .market-context{
+      margin-top:20px;
+      text-align:center;
+      color:#d8e1ef;
+      font-weight:800;
+      font-size:15px;
+      letter-spacing:.3px;
+      padding-top:10px;
+      border-top:1px solid #31415f;
+    }
+
+    .context-green{ color:var(--green); }
+    .context-yellow{ color:var(--yellow); }
+    .context-red{ color:var(--red); }
+
+    .tag{
+      display:inline-block;
+      padding:3px 8px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:.3px;
+      margin-left:6px;
+      vertical-align:middle;
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .tag-top{ background:rgba(34,197,94,.10); color:#86efac; }
+    .tag-watch{ background:rgba(250,204,21,.10); color:#fde68a; }
+    .tag-ignore{ background:rgba(239,68,68,.10); color:#fca5a5; }
+
+    .footnote{
+      margin-top:14px;
+      color:var(--muted);
+      font-size:12px;
+      text-align:center;
+      line-height:1.5;
+    }
+
+    @media (max-width:420px){
+      .row{
+        grid-template-columns:72px 1fr auto;
+      }
+      .ticker{font-size:16px}
+      .score,.flags{font-size:17px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="title">🚀 NORTHSTAR PREMARKET RADAR</div>
+      <div class="divider"></div>
+
+      <div class="actions">
+        <button onclick="scanMarket()">SCAN MARKET</button>
+      </div>
+
+      <div id="status" class="status">Prêt pour le scan.</div>
+
+      <div id="output"></div>
+    </div>
+  </div>
+
+  <script>
+    /******************************************************************
+     * NORTHSTAR V1
+     * ----------------------------------------------------------------
+     * Pour avancer tout de suite, on utilise ici des données d'exemple.
+     *
+     * PLUS TARD :
+     * remplace simplement getRawScanData() par ton vrai fetch / parser.
+     ******************************************************************/
+
+    function getRawScanData() {
+      return [
+        { ticker:"AMD",  price:193.68, gapPct:-6.58, session:"REG", volRel:2.30, floatPct:6.0, sector:"SEMI", news:true,  pmVolume:3200000, marketCap:"large", premarketHigh:198.5, premarketLow:191.8, last:193.68, compression:true, momentumAlive:true },
+        { ticker:"PLTR", price:151.45, gapPct:15.25, session:"REG", volRel:2.10, floatPct:5.2, sector:"AI",   news:true,  pmVolume:4100000, marketCap:"large", premarketHigh:153.1, premarketLow:149.9, last:151.45, compression:true, momentumAlive:true },
+        { ticker:"MRVL", price:87.52,  gapPct:11.33, session:"REG", volRel:1.80, floatPct:4.4, sector:"SEMI", news:true,  pmVolume:1400000, marketCap:"large", premarketHigh:88.6, premarketLow:86.4, last:87.52, compression:true, momentumAlive:true },
+        { ticker:"TSLA", price:393.01, gapPct:-5.85, session:"REG", volRel:1.60, floatPct:3.1, sector:"EV",   news:false, pmVolume:2900000, marketCap:"mega",  premarketHigh:399.8, premarketLow:391.4, last:393.01, compression:false, momentumAlive:true },
+        { ticker:"CVX",  price:196.83, gapPct:7.12,  session:"REG", volRel:1.55, floatPct:2.8, sector:"ENERGY",news:true, pmVolume:980000,  marketCap:"mega",  premarketHigh:197.7, premarketLow:195.9, last:196.83, compression:false, momentumAlive:true },
+        { ticker:"AAPL", price:251.28, gapPct:-1.76, session:"REG", volRel:1.10, floatPct:0.9, sector:"TECH", news:false, pmVolume:800000,  marketCap:"mega",  premarketHigh:252.4, premarketLow:250.8, last:251.28, compression:false, momentumAlive:false }
+      ];
+    }
+
+    // Contexte marché simple pour V1
+    function getMarketContext() {
+      // Plus tard, tu pourras le brancher à SPY / QQQ / VIX réels
+      const spy = 0.42;
+      const qqq = 0.67;
+      const vix = -1.80;
+
+      if (spy > 0 && qqq > 0 && vix <= 0) {
+        return { dot:"🟢", className:"context-green", label:"favorable" };
+      }
+      if ((spy >= 0 && qqq < 0) || (spy < 0 && qqq >= 0) || vix > 0 && vix < 2) {
+        return { dot:"🟡", className:"context-yellow", label:"mixte" };
+      }
+      return { dot:"🔴", className:"context-red", label:"risqué" };
+    }
+
+    function passesLiquidityFilter(row) {
+      return (
+        row.price >= 5 &&
+        row.pmVolume >= 300000 &&
+        row.volRel >= 1.2
+      );
+    }
+
+    function isGapValid(row) {
+      return Math.abs(row.gapPct) >= 3;
+    }
+
+    function hasInstitutionalVolume(row) {
+      return row.volRel >= 2.0;
+    }
+
+    function hasStrongFloat(row) {
+      return row.floatPct >= 3;
+    }
+
+    function gapHoldScore(row) {
+      // V1 simplifiée :
+      // on considère que si le titre reste dans la moitié haute de son range pré-market
+      // et que le momentum est encore vivant, il "tient" suffisamment.
+      const range = row.premarketHigh - row.premarketLow;
+      if (range <= 0) return false;
+      const pos = (row.last - row.premarketLow) / range;
+      return pos >= 0.50;
+    }
+
+    function structureScore(row) {
+      return !!row.compression;
+    }
+
+    function momentumScore(row) {
+      return !!row.momentumAlive;
+    }
+
+    function computeScore(row) {
+      let score = 0;
+
+      if (isGapValid(row)) score += 1;            // Gap ≥ 3%
+      if (row.volRel >= 1.5) score += 1;          // Volume relatif
+      if (gapHoldScore(row)) score += 1;          // Tient le gap / tient le mouvement
+      if (structureScore(row)) score += 1;        // Compression / structure propre
+      if (momentumScore(row)) score += 1;         // Momentum vivant
+
+      return Math.max(0, Math.min(5, score));
+    }
+
+    function greenDots(score) {
+      return "🟢".repeat(score || 0);
+    }
+
+    function sectionName(score) {
+      if (score >= 4) return "TOP";
+      if (score === 3) return "WATCH";
+      return "IGNORE";
+    }
+
+    function summarizeKing(row) {
+      const pieces = [
+        `Gap ${Math.abs(row.gapPct).toFixed(1)}%`,
+        `Vol ${row.volRel.toFixed(1)}x`,
+        `Float ${row.floatPct.toFixed(1)}%`,
+        row.compression ? "Compression" : "Structure active"
+      ];
+      return pieces.join(" | ");
+    }
+
+    function assignSectorLeaders(rows) {
+      const bestBySector = new Map();
+
+      rows.forEach(row => {
+        const power = computeScore(row) + Math.abs(row.gapPct) / 10 + row.volRel / 5;
+        if (!bestBySector.has(row.sector) || power > bestBySector.get(row.sector).power) {
+          bestBySector.set(row.sector, { ticker: row.ticker, power });
+        }
+      });
+
+      return rows.map(row => ({
+        ...row,
+        isSectorLeader: bestBySector.get(row.sector)?.ticker === row.ticker
+      }));
+    }
+
+    function rankRows(rows) {
+      return rows.sort((a, b) => {
+        const aScore = computeScore(a);
+        const bScore = computeScore(b);
+
+        if (bScore !== aScore) return bScore - aScore;
+        if (hasInstitutionalVolume(b) !== hasInstitutionalVolume(a)) {
+          return Number(hasInstitutionalVolume(b)) - Number(hasInstitutionalVolume(a));
+        }
+        return Math.abs(b.gapPct) - Math.abs(a.gapPct);
+      });
+    }
+
+    function chooseKing(rows) {
+      const eligible = rows.filter(r => computeScore(r) >= 4);
+      if (!eligible.length) return null;
+      return rankRows([...eligible])[0];
+    }
+
+    function rowFlags(row) {
+      let flags = "";
+      if (hasInstitutionalVolume(row)) flags += "💰";
+      if (row.isSectorLeader) flags += (flags ? "  " : "") + "🏁";
+      return flags;
+    }
+
+    function renderList(rows, tagClass, tagText) {
+      if (!rows.length) return "";
+      return `
+        <div class="section-title">${tagText}</div>
+        <div class="list">
+          ${rows.map(row => `
+            <div class="row">
+              <div class="ticker">${row.ticker}</div>
+              <div class="score">${greenDots(computeScore(row))}</div>
+              <div class="flags">${rowFlags(row)}</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderOutput(rows) {
+      const output = document.getElementById("output");
+      const context = getMarketContext();
+
+      const king = chooseKing(rows);
+      const others = rows.filter(r => !king || r.ticker !== king.ticker);
+
+      const topRows = others.filter(r => computeScore(r) >= 4);
+      const watchRows = others.filter(r => computeScore(r) === 3);
+      const ignoreRows = others.filter(r => computeScore(r) <= 2).slice(0, 3);
+
+      output.innerHTML = `
+        ${king ? `
+          <div class="king-box">
+            <div class="king-title">👑 KING OF THE DAY 👑</div>
+            <div class="row">
+              <div class="ticker">${king.ticker}</div>
+              <div class="score">${greenDots(computeScore(king))}</div>
+              <div class="flags">${rowFlags(king)}</div>
+            </div>
+            <div class="summary">${summarizeKing(king)}</div>
+          </div>
+        ` : `
+          <div class="king-box">
+            <div class="king-title">👑 KING OF THE DAY 👑</div>
+            <div class="summary">Aucun vrai KING ce matin. Marché à surveiller avec prudence.</div>
+          </div>
+        `}
+
+        ${renderList(topRows, "tag-top", "TOP CANDIDATS")}
+        ${renderList(watchRows, "tag-watch", "WATCH")}
+        ${renderList(ignoreRows, "tag-ignore", "IGNORE")}
+
+        <div class="market-context">
+          ──────────── Market <span class="${context.className}">${context.dot}</span> Context ────────────
+        </div>
+
+        <div class="footnote">
+          Score = Gap ≥ 3% • VolRel ≥ 1.5x • Tenue du mouvement • Structure propre • Momentum vivant
+        </div>
+      `;
+    }
+
+    async function scanMarket() {
+      const status = document.getElementById("status");
+      status.textContent = "Scan en cours...";
+
+      try {
+        // ============================================================
+        // ICI, plus tard, tu remplaces cette ligne par ton vrai fetch
+        // ex:
+        // const raw = await fetch('/api/scan').then(r => r.json());
+        // ============================================================
+        const raw = getRawScanData();
+
+        let rows = raw
+          .filter(passesLiquidityFilter)
+          .map(row => ({
+            ...row,
+            score: computeScore(row)
+          }));
+
+        rows = assignSectorLeaders(rows);
+        rows = rankRows(rows);
+
+        renderOutput(rows);
+        status.textContent = `Scan terminé : ${rows.length} titres filtrés.`;
+      } catch (err) {
+        console.error(err);
+        status.textContent = "Erreur pendant le scan.";
+        document.getElementById("output").innerHTML = `
+          <div class="footnote" style="color:#fca5a5;">
+            Impossible de générer le radar. Vérifie la source des données ou le code du scan.
+          </div>
+        `;
+      }
+    }
+
+    // Affichage initial automatique
+    scanMarket();
+  </script>
 </body>
 </html>
