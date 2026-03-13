@@ -58,7 +58,6 @@ border-bottom:1px solid #333;
 </table>
 
 <script>
-
 const tickers = [
 "NVDA","TSLA","AMD","PLTR","SMCI",
 "MU","MRVL","AVGO","AAPL","XOM","CVX"
@@ -68,54 +67,57 @@ async function scan(){
 
 let results=[]
 
-for(let t of tickers){
+const requests = tickers.map(async (t) => {
+  try{
+    let url=`https://autumn-dream-7e4e.lavpierre.workers.dev/?symbol=${t}`
 
-try{
+    let r = await fetch(url)
+    let data = await r.json()
 
-let url=`https://autumn-dream-7e4e.lavpierre.workers.dev/?symbol=${t}`
-let r=await fetch(url)
-let data=await r.json()
+    let result = data.chart.result[0]
+    let meta = result.meta
+    let quote = result.indicators.quote[0]
+    let close = quote.close
 
-let close=data.chart.result[0].indicators.quote[0].close
+    let today = meta.regularMarketPrice
+    let yesterday = meta.chartPreviousClose
 
-let today=close[close.length-1]
-let yesterday=close[close.length-2]
+    let gap = 0
+    if (yesterday && yesterday !== 0) {
+      gap = ((today - yesterday) / yesterday) * 100
+    }
 
-let gap=((today-yesterday)/yesterday)*100
+    results.push({
+      ticker: t,
+      price: today,
+      gap: gap
+    })
 
-results.push({
-ticker:t,
-price:today,
-gap:gap
+  }catch(e){
+    console.log("Erreur sur", t, e)
+  }
 })
 
-}catch(e){}
-
-}
+await Promise.all(requests)
 
 results.sort((a,b)=>Math.abs(b.gap)-Math.abs(a.gap))
 
 let table=document.getElementById("table")
 
-table.innerHTML="<tr><th>Ticker</th><th>Price</th><th>Gap %</th></tr>"
+table.innerHTML="<tr><th>Téléscripteur</th><th>Prix</th><th>Écart %</th></tr>"
 
 for(let r of results){
 
-let color=r.gap>0?"green":"red"
+  let color = r.gap >= 0 ? "green" : "red"
 
-table.innerHTML+=`
-<tr>
-<td>${r.ticker}</td>
-<td>${r.price.toFixed(2)}</td>
-<td class="${color}">${r.gap.toFixed(2)}%</td>
-</tr>
-`
-
+  table.innerHTML += `
+  <tr>
+    <td>${r.ticker}</td>
+    <td>${r.price.toFixed(2)}</td>
+    <td class="${color}">${r.gap.toFixed(2)}%</td>
+  </tr>
+  `
 }
 
 }
-
 </script>
-
-</body>
-</html>
