@@ -8,15 +8,14 @@
     :root{
       --bg:#0b1220;
       --panel:#121a2b;
-      --panel-2:#0f1726;
       --text:#e7edf7;
       --muted:#95a3ba;
       --green:#22c55e;
       --yellow:#facc15;
       --red:#ef4444;
-      --blue:#60a5fa;
       --border:#24314a;
       --gold:#fbbf24;
+      --line:#31415f;
     }
 
     *{box-sizing:border-box}
@@ -30,17 +29,16 @@
     }
 
     .wrap{
-      max-width:720px;
+      max-width:760px;
       margin:0 auto;
     }
 
     .card{
-      background:rgba(18,26,43,.92);
+      background:rgba(18,26,43,.96);
       border:1px solid var(--border);
       border-radius:18px;
       padding:16px 14px 18px;
       box-shadow:0 10px 30px rgba(0,0,0,.28);
-      backdrop-filter: blur(10px);
     }
 
     .title{
@@ -53,7 +51,7 @@
 
     .divider{
       height:1px;
-      background:linear-gradient(90deg,transparent, #31415f 15%, #31415f 85%, transparent);
+      background:linear-gradient(90deg,transparent, var(--line) 15%, var(--line) 85%, transparent);
       margin:8px 0 14px;
     }
 
@@ -61,8 +59,8 @@
       display:flex;
       gap:10px;
       justify-content:center;
-      margin-bottom:14px;
       flex-wrap:wrap;
+      margin-bottom:14px;
     }
 
     button{
@@ -75,10 +73,12 @@
       color:#06101b;
       background:linear-gradient(180deg,#7dd3fc,#38bdf8);
       box-shadow:0 6px 16px rgba(56,189,248,.22);
+      cursor:pointer;
     }
 
-    button:active{
-      transform:translateY(1px);
+    button:disabled{
+      opacity:.6;
+      cursor:not-allowed;
     }
 
     .status{
@@ -87,6 +87,7 @@
       font-size:13px;
       min-height:18px;
       margin-bottom:10px;
+      line-height:1.4;
     }
 
     .section-title{
@@ -116,18 +117,16 @@
 
     .row{
       display:grid;
-      grid-template-columns:80px 1fr auto;
+      grid-template-columns:84px 1fr auto auto;
       align-items:center;
       gap:10px;
       padding:10px 6px;
       border-radius:12px;
       background:rgba(255,255,255,.02);
-      margin-bottom:10px;
+      margin-bottom:12px;
     }
 
-    .row:last-child{
-      margin-bottom:0;
-    }
+    .row:last-child{ margin-bottom:0; }
 
     .ticker{
       font-weight:900;
@@ -142,7 +141,7 @@
       white-space:nowrap;
     }
 
-    .flags{
+    .flags, .action-signal{
       white-space:nowrap;
       font-size:18px;
       font-weight:800;
@@ -151,7 +150,7 @@
     .summary{
       color:#d7e1f0;
       font-size:13px;
-      line-height:1.55;
+      line-height:1.6;
       margin-top:10px;
       text-align:center;
     }
@@ -162,50 +161,29 @@
       gap:8px;
     }
 
-    .muted{
-      color:var(--muted);
+    .market-context{
+      margin-top:20px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      color:#d8e1ef;
+      font-weight:800;
+      font-size:15px;
+      letter-spacing:.3px;
     }
 
-.market-context{
-  margin-top:20px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-  color:#d8e1ef;
-  font-weight:800;
-  font-size:15px;
-  letter-spacing:.3px;
-}
-
-.market-context::before,
-.market-context::after{
-  content:"";
-  flex:1;
-  height:1px;
-  background:#31415f;
-}
-    
+    .market-context::before,
+    .market-context::after{
+      content:"";
+      flex:1;
+      height:1px;
+      background:var(--line);
+    }
 
     .context-green{ color:var(--green); }
     .context-yellow{ color:var(--yellow); }
     .context-red{ color:var(--red); }
-
-    .tag{
-      display:inline-block;
-      padding:3px 8px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:800;
-      letter-spacing:.3px;
-      margin-left:6px;
-      vertical-align:middle;
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .tag-top{ background:rgba(34,197,94,.10); color:#86efac; }
-    .tag-watch{ background:rgba(250,204,21,.10); color:#fde68a; }
-    .tag-ignore{ background:rgba(239,68,68,.10); color:#fca5a5; }
 
     .footnote{
       margin-top:14px;
@@ -215,9 +193,22 @@
       line-height:1.5;
     }
 
-    @media (max-width:420px){
+    .hint{
+      margin-top:12px;
+      color:var(--muted);
+      font-size:12px;
+      text-align:center;
+    }
+
+    @media (max-width:480px){
       .row{
         grid-template-columns:72px 1fr auto;
+      }
+      .action-signal{
+        grid-column: 1 / -1;
+        justify-self:end;
+        font-size:16px;
+        margin-top:-4px;
       }
       .ticker{font-size:16px}
       .score,.flags{font-size:17px}
@@ -231,104 +222,234 @@
       <div class="divider"></div>
 
       <div class="actions">
-        <button onclick="scanMarket()">SCAN MARKET</button>
+        <button id="scanBtn" onclick="scanMarket()">SCAN MARKET</button>
       </div>
 
-      <div id="status" class="status">Prêt pour le scan.</div>
-
+      <div id="status" class="status">Prêt pour le scan réel.</div>
       <div id="output"></div>
+      <div class="hint">Universe liquide modifiable directement dans le script.</div>
     </div>
   </div>
 
   <script>
-    /******************************************************************
-     * NORTHSTAR V1
-     * ----------------------------------------------------------------
-     * Pour avancer tout de suite, on utilise ici des données d'exemple.
-     *
-     * PLUS TARD :
-     * remplace simplement getRawScanData() par ton vrai fetch / parser.
-     ******************************************************************/
+    // =============================
+    // CONFIG
+    // =============================
+    const API_KEY = "TON_API_KEY_FMP_ICI";
 
-    function getRawScanData() {
-      return [
-        { ticker:"AMD",  price:193.68, gapPct:-6.58, session:"REG", volRel:2.30, floatPct:6.0, sector:"SEMI", news:true,  pmVolume:3200000, marketCap:"large", premarketHigh:198.5, premarketLow:191.8, last:193.68, compression:true, momentumAlive:true },
-        { ticker:"PLTR", price:151.45, gapPct:15.25, session:"REG", volRel:2.10, floatPct:5.2, sector:"AI",   news:true,  pmVolume:4100000, marketCap:"large", premarketHigh:153.1, premarketLow:149.9, last:151.45, compression:true, momentumAlive:true },
-        { ticker:"MRVL", price:87.52,  gapPct:11.33, session:"REG", volRel:1.80, floatPct:4.4, sector:"SEMI", news:true,  pmVolume:1400000, marketCap:"large", premarketHigh:88.6, premarketLow:86.4, last:87.52, compression:true, momentumAlive:true },
-        { ticker:"TSLA", price:393.01, gapPct:-5.85, session:"REG", volRel:1.60, floatPct:3.1, sector:"EV",   news:false, pmVolume:2900000, marketCap:"mega",  premarketHigh:399.8, premarketLow:391.4, last:393.01, compression:false, momentumAlive:true },
-        { ticker:"CVX",  price:196.83, gapPct:7.12,  session:"REG", volRel:1.55, floatPct:2.8, sector:"ENERGY",news:true, pmVolume:980000,  marketCap:"mega",  premarketHigh:197.7, premarketLow:195.9, last:196.83, compression:false, momentumAlive:true },
-        { ticker:"AAPL", price:251.28, gapPct:-1.76, session:"REG", volRel:1.10, floatPct:0.9, sector:"TECH", news:false, pmVolume:800000,  marketCap:"mega",  premarketHigh:252.4, premarketLow:250.8, last:251.28, compression:false, momentumAlive:false }
-      ];
+    // Universe compact pour iPhone + limite API raisonnable.
+    // Tu peux en ajouter ou en retirer.
+    const UNIVERSE = [
+      "AAPL","AMD","AMZN","AVGO","BABA","COIN","CVX","GOOGL","META","MRVL",
+      "MU","NFLX","NVDA","PLTR","QCOM","SMCI","TSLA","UBER","XOM","JPM"
+    ];
+
+    const MARKET_SYMBOLS = ["SPY","QQQ","^VIX"];
+
+    // =============================
+    // HELPERS
+    // =============================
+    const fmt1 = (n) => Number.isFinite(n) ? n.toFixed(1) : "—";
+    const fmt2 = (n) => Number.isFinite(n) ? n.toFixed(2) : "—";
+    const absPct = (n) => Number.isFinite(n) ? Math.abs(n) : 0;
+
+    function greenDots(score) {
+      return "🟢".repeat(Math.max(0, Math.min(5, score)));
     }
 
-    // Contexte marché simple pour V1
-    function getMarketContext() {
-      // Plus tard, tu pourras le brancher à SPY / QQQ / VIX réels
-      const spy = 0.42;
-      const qqq = 0.67;
-      const vix = -1.80;
+    function safeArray(value) {
+      return Array.isArray(value) ? value : [];
+    }
 
-      if (spy > 0 && qqq > 0 && vix <= 0) {
-        return { dot:"🟢", className:"context-green", label:"favorable" };
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function fetchJson(url) {
+      const res = await fetch(url, { method: "GET" });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} sur ${url}`);
       }
-      if ((spy >= 0 && qqq < 0) || (spy < 0 && qqq >= 0) || vix > 0 && vix < 2) {
-        return { dot:"🟡", className:"context-yellow", label:"mixte" };
+      return res.json();
+    }
+
+    function chunk(arr, size) {
+      const out = [];
+      for (let i = 0; i < arr.length; i += size) {
+        out.push(arr.slice(i, i + size));
       }
-      return { dot:"🔴", className:"context-red", label:"risqué" };
+      return out;
+    }
+
+    // =============================
+    // FMP ENDPOINTS
+    // =============================
+    async function fetchBatchQuotes(symbols) {
+      const groups = chunk(symbols, 5);
+      const results = [];
+
+      // Séquentiel pour rester gentil avec les limites API
+      for (const group of groups) {
+        const joined = group.join(",");
+        const url = `https://financialmodelingprep.com/stable/batch-quote?symbols=${encodeURIComponent(joined)}&apikey=${API_KEY}`;
+        const data = await fetchJson(url);
+        results.push(...safeArray(data));
+        await delay(150);
+      }
+
+      return results;
+    }
+
+    async function fetchShareFloat(symbol) {
+      const url = `https://financialmodelingprep.com/stable/shares-float?symbol=${encodeURIComponent(symbol)}&apikey=${API_KEY}`;
+      const data = await fetchJson(url);
+      return safeArray(data)[0] || null;
+    }
+
+    async function fetchIntraday5m(symbol) {
+      const url = `https://financialmodelingprep.com/stable/historical-chart/5min?symbol=${encodeURIComponent(symbol)}&apikey=${API_KEY}`;
+      const data = await fetchJson(url);
+      return safeArray(data);
+    }
+
+    async function fetchStockNews(symbol, limit = 5) {
+      const url = `https://financialmodelingprep.com/stable/news/stock?symbols=${encodeURIComponent(symbol)}&limit=${limit}&apikey=${API_KEY}`;
+      const data = await fetchJson(url);
+      return safeArray(data);
+    }
+
+    // =============================
+    // DATA NORMALIZATION
+    // =============================
+    function normalizeQuote(raw) {
+      // FMP batch quote fields can vary slightly by endpoint version.
+      const symbol = raw.symbol || raw.ticker || raw.code;
+      const price = Number(raw.price ?? raw.lastPrice ?? raw.previousClose ?? NaN);
+      const previousClose = Number(raw.previousClose ?? raw.prevClose ?? NaN);
+      const volume = Number(raw.volume ?? raw.dayVolume ?? 0);
+      const changePct = Number(raw.changesPercentage ?? raw.changePercentage ?? 0);
+
+      return {
+        symbol,
+        price,
+        previousClose,
+        volume,
+        changePct,
+        name: raw.name || symbol,
+        exchange: raw.exchange || "",
+        marketCap: Number(raw.marketCap ?? 0),
+        dayLow: Number(raw.dayLow ?? NaN),
+        dayHigh: Number(raw.dayHigh ?? NaN)
+      };
+    }
+
+    function latestBarsToday(bars) {
+      // Assume descending most-recent-first if API returns that way; sort to be safe.
+      const sorted = [...bars].sort((a, b) => new Date(a.date) - new Date(b.date));
+      return sorted.slice(-24); // recent window only
+    }
+
+    function computeCompression(bars) {
+      if (bars.length < 4) return false;
+
+      const recent = bars.slice(-4);
+      const highs = recent.map(b => Number(b.high));
+      const lows = recent.map(b => Number(b.low));
+      const closes = recent.map(b => Number(b.close));
+
+      const range = Math.max(...highs) - Math.min(...lows);
+      const avgClose = closes.reduce((a,b)=>a+b,0) / closes.length || 1;
+
+      // structure "calme" et range relativement serré
+      return (range / avgClose) <= 0.0125;
+    }
+
+    function computeMomentumAlive(bars) {
+      if (bars.length < 3) return false;
+
+      const recent = bars.slice(-3);
+      const first = Number(recent[0].close);
+      const last = Number(recent[recent.length - 1].close);
+      const vol = recent.reduce((acc, b) => acc + Number(b.volume || 0), 0);
+
+      return last >= first * 0.995 && vol > 0;
+    }
+
+    function computePremarketRangeHold(bars, currentPrice) {
+      if (bars.length < 3 || !Number.isFinite(currentPrice)) return false;
+
+      const highs = bars.map(b => Number(b.high));
+      const lows = bars.map(b => Number(b.low));
+      const hi = Math.max(...highs);
+      const lo = Math.min(...lows);
+      const range = hi - lo;
+
+      if (!Number.isFinite(range) || range <= 0) return false;
+
+      const pos = (currentPrice - lo) / range;
+      return pos >= 0.50;
+    }
+
+    function guessOpenReady(score, volRel, hold, compression, momentumAlive) {
+      if (score >= 4 && volRel >= 1.5 && hold && momentumAlive) {
+        return "🟢GO";
+      }
+      if (score >= 3 && (compression || hold)) {
+        return "🟡WAIT";
+      }
+      return "🔴STOP";
+    }
+
+    function actionRank(signal) {
+      if (signal === "🟢GO") return 3;
+      if (signal === "🟡WAIT") return 2;
+      return 1;
+    }
+
+    // =============================
+    // SCORING
+    // =============================
+    function computeVolRel(dayVolume, bars) {
+      // Proxy navigateur:
+      // compare le volume actuel au volume moyen récent des 5-min bars.
+      if (!bars.length || !dayVolume) return 0;
+
+      const recentBars = bars.slice(-12); // ~1h récente
+      const avg5m = recentBars.reduce((a,b)=>a + Number(b.volume || 0), 0) / Math.max(recentBars.length, 1);
+      if (!avg5m) return 0;
+
+      // Approximation volontaire pour usage mobile
+      const projected = avg5m * 12;
+      return projected > 0 ? dayVolume / projected : 0;
+    }
+
+    function computeFloatPct(volume, floatShares) {
+      if (!floatShares || !volume) return 0;
+      return (volume / floatShares) * 100;
+    }
+
+    function hasInstitutionalVolume(volRel, floatPct, hold, compression) {
+      return volRel >= 2.0 && hold && (compression || floatPct >= 2);
+    }
+
+    function computeScore({ gapPct, volRel, hold, compression, momentumAlive }) {
+      let score = 0;
+
+      if (absPct(gapPct) >= 3) score += 1;
+      if (volRel >= 1.5) score += 1;
+      if (hold) score += 1;
+      if (compression) score += 1;
+      if (momentumAlive) score += 1;
+
+      return Math.max(0, Math.min(5, score));
     }
 
     function passesLiquidityFilter(row) {
       return (
         row.price >= 5 &&
-        row.pmVolume >= 300000 &&
+        row.volume >= 300000 &&
         row.volRel >= 1.2
       );
-    }
-
-    function isGapValid(row) {
-      return Math.abs(row.gapPct) >= 3;
-    }
-
-    function hasInstitutionalVolume(row) {
-      return row.volRel >= 2.0;
-    }
-
-    function hasStrongFloat(row) {
-      return row.floatPct >= 3;
-    }
-
-    function gapHoldScore(row) {
-      // V1 simplifiée :
-      // on considère que si le titre reste dans la moitié haute de son range pré-market
-      // et que le momentum est encore vivant, il "tient" suffisamment.
-      const range = row.premarketHigh - row.premarketLow;
-      if (range <= 0) return false;
-      const pos = (row.last - row.premarketLow) / range;
-      return pos >= 0.50;
-    }
-
-    function structureScore(row) {
-      return !!row.compression;
-    }
-
-    function momentumScore(row) {
-      return !!row.momentumAlive;
-    }
-
-    function computeScore(row) {
-      let score = 0;
-
-      if (isGapValid(row)) score += 1;            // Gap ≥ 3%
-      if (row.volRel >= 1.5) score += 1;          // Volume relatif
-      if (gapHoldScore(row)) score += 1;          // Tient le gap / tient le mouvement
-      if (structureScore(row)) score += 1;        // Compression / structure propre
-      if (momentumScore(row)) score += 1;         // Momentum vivant
-
-      return Math.max(0, Math.min(5, score));
-    }
-
-    function greenDots(score) {
-      return "🟢".repeat(score || 0);
     }
 
     function sectionName(score) {
@@ -337,109 +458,141 @@
       return "IGNORE";
     }
 
-    function summarizeKing(row) {
-      const pieces = [
-        `Gap ${Math.abs(row.gapPct).toFixed(1)}%`,
-        `Vol ${row.volRel.toFixed(1)}x`,
-        `Float ${row.floatPct.toFixed(1)}%`,
+    function summarizeRow(row) {
+      const parts = [
+        `Gap ${fmt1(absPct(row.gapPct))}%`,
+        `Vol ${fmt1(row.volRel)}x`,
+        `Float ${fmt1(row.floatPct)}%`,
         row.compression ? "Compression" : "Structure active"
       ];
-      return pieces.join(" | ");
+      return parts.join(" | ");
     }
 
-    function assignSectorLeaders(rows) {
-      const bestBySector = new Map();
+    function chooseMarketContext(spyQuote, qqqQuote, vixQuote) {
+      const spy = Number(spyQuote?.changePct ?? 0);
+      const qqq = Number(qqqQuote?.changePct ?? 0);
+      const vix = Number(vixQuote?.changePct ?? 0);
 
-      rows.forEach(row => {
-        const power = computeScore(row) + Math.abs(row.gapPct) / 10 + row.volRel / 5;
-        if (!bestBySector.has(row.sector) || power > bestBySector.get(row.sector).power) {
-          bestBySector.set(row.sector, { ticker: row.ticker, power });
+      if (spy > 0 && qqq > 0 && vix <= 0) {
+        return { dot: "🟢", className: "context-green", label: "favorable" };
+      }
+      if ((spy >= 0 && qqq < 0) || (spy < 0 && qqq >= 0) || (vix > 0 && vix < 2)) {
+        return { dot: "🟡", className: "context-yellow", label: "mixte" };
+      }
+      return { dot: "🔴", className: "context-red", label: "risqué" };
+    }
+
+    function pickSectorLeaders(rows) {
+      const best = new Map();
+
+      for (const row of rows) {
+        const leaderPower =
+          row.score * 10 +
+          row.volRel * 2 +
+          absPct(row.gapPct) +
+          (row.institutional ? 3 : 0) +
+          actionRank(row.actionSignal);
+
+        if (!best.has(row.sector) || leaderPower > best.get(row.sector).power) {
+          best.set(row.sector, { symbol: row.symbol, power: leaderPower });
         }
-      });
+      }
 
       return rows.map(row => ({
         ...row,
-        isSectorLeader: bestBySector.get(row.sector)?.ticker === row.ticker
+        isSectorLeader: best.get(row.sector)?.symbol === row.symbol
       }));
     }
 
-    function rankRows(rows) {
-      return rows.sort((a, b) => {
-        const aScore = computeScore(a);
-        const bScore = computeScore(b);
-
-        if (bScore !== aScore) return bScore - aScore;
-        if (hasInstitutionalVolume(b) !== hasInstitutionalVolume(a)) {
-          return Number(hasInstitutionalVolume(b)) - Number(hasInstitutionalVolume(a));
-        }
-        return Math.abs(b.gapPct) - Math.abs(a.gapPct);
-      });
-    }
-
     function chooseKing(rows) {
-      const eligible = rows.filter(r => computeScore(r) >= 4);
+      const eligible = rows.filter(r => r.score >= 4);
+
       if (!eligible.length) return null;
-      return rankRows([...eligible])[0];
+
+      const ranked = [...eligible].sort((a, b) => {
+        const kingA =
+          a.score * 10 +
+          a.volRel * 3 +
+          absPct(a.gapPct) +
+          (a.institutional ? 4 : 0) +
+          (a.isSectorLeader ? 3 : 0) +
+          actionRank(a.actionSignal) * 3 +
+          (a.hold ? 2 : 0);
+
+        const kingB =
+          b.score * 10 +
+          b.volRel * 3 +
+          absPct(b.gapPct) +
+          (b.institutional ? 4 : 0) +
+          (b.isSectorLeader ? 3 : 0) +
+          actionRank(b.actionSignal) * 3 +
+          (b.hold ? 2 : 0);
+
+        return kingB - kingA;
+      });
+
+      return ranked[0];
     }
 
-    function rowFlags(row) {
-      let flags = "";
-      if (hasInstitutionalVolume(row)) flags += "💰";
-      if (row.isSectorLeader) flags += (flags ? "  " : "") + "🏁";
-      return flags;
+    // =============================
+    // RENDER
+    // =============================
+    function flagsForRow(row) {
+      const flags = [];
+      if (row.institutional) flags.push("💰");
+      if (row.isSectorLeader) flags.push("🏁");
+      return flags.join("  ");
     }
 
-    function renderList(rows, tagClass, tagText) {
-      if (!rows.length) return "";
-      return `
-        <div class="section-title">${tagText}</div>
-        <div class="list">
-          ${rows.map(row => `
-            <div class="row">
-              <div class="ticker">${row.ticker}</div>
-              <div class="score">${greenDots(computeScore(row))}</div>
-              <div class="flags">${rowFlags(row)}</div>
-            </div>
-          `).join("")}
+    function renderRows(rows) {
+      return rows.map(row => `
+        <div class="row">
+          <div class="ticker">${row.symbol}</div>
+          <div class="score">${greenDots(row.score)}</div>
+          <div class="flags">${flagsForRow(row)}</div>
+          <div class="action-signal">${row.actionSignal}</div>
         </div>
-      `;
+      `).join("");
     }
 
-    function renderOutput(rows) {
+    function renderOutput(rows, context) {
       const output = document.getElementById("output");
-      const context = getMarketContext();
-
       const king = chooseKing(rows);
-      const others = rows.filter(r => !king || r.ticker !== king.ticker);
+      const rest = rows.filter(r => !king || r.symbol !== king.symbol);
 
-      const topRows = others.filter(r => computeScore(r) >= 4);
-      const watchRows = others.filter(r => computeScore(r) === 3);
-      const ignoreRows = others.filter(r => computeScore(r) <= 2).slice(0, 3);
+      const topRows = rest.filter(r => r.score >= 4);
+      const watchRows = rest.filter(r => r.score === 3);
+      const ignoreRows = rest.filter(r => r.score <= 2).slice(0, 3);
 
       output.innerHTML = `
-        ${king ? `
-          <div class="king-box">
-            <div class="king-title">👑 KING OF THE DAY 👑</div>
-            <div class="row">
-              <div class="ticker">${king.ticker}</div>
-              <div class="score">${greenDots(computeScore(king))}</div>
-              <div class="flags">${rowFlags(king)}</div>
-            </div>
-            <div class="summary">${summarizeKing(king)}</div>
-          </div>
-        ` : `
-          <div class="king-box">
-            <div class="king-title">👑 KING OF THE DAY 👑</div>
-            <div class="summary">Aucun vrai KING ce matin. Marché à surveiller avec prudence.</div>
-          </div>
-        `}
+        ${
+          king
+            ? `
+              <div class="king-box">
+                <div class="king-title">👑 KING OF THE DAY 👑</div>
+                <div class="row">
+                  <div class="ticker">${king.symbol}</div>
+                  <div class="score">${greenDots(king.score)}</div>
+                  <div class="flags">${flagsForRow(king)}</div>
+                  <div class="action-signal">${king.actionSignal}</div>
+                </div>
+                <div class="summary">${summarizeRow(king)}</div>
+              </div>
+            `
+            : `
+              <div class="king-box">
+                <div class="king-title">👑 KING OF THE DAY 👑</div>
+                <div class="summary">Aucun vrai KING ce matin. Marché à surveiller avec prudence.</div>
+              </div>
+            `
+        }
 
-        ${renderList(topRows, "tag-top", "TOP CANDIDATS")}
-        ${renderList(watchRows, "tag-watch", "WATCH")}
-        ${renderList(ignoreRows, "tag-ignore", "IGNORE")}
+        ${topRows.length ? `<div class="section-title">TOP CANDIDATS</div><div class="list">${renderRows(topRows)}</div>` : ""}
+        ${watchRows.length ? `<div class="section-title">WATCH</div><div class="list">${renderRows(watchRows)}</div>` : ""}
+        ${ignoreRows.length ? `<div class="section-title">IGNORE</div><div class="list">${renderRows(ignoreRows)}</div>` : ""}
 
         <div class="market-context">
-          ──────────── Market <span class="${context.className}">${context.dot}</span> Context ────────────
+          <span>Market <span class="${context.className}">${context.dot}</span> Context</span>
         </div>
 
         <div class="footnote">
@@ -448,42 +601,176 @@
       `;
     }
 
+    // =============================
+    // MAIN SCAN
+    // =============================
+    async function buildSymbolRecord(symbol, quoteMap, marketNewsEnabled = true) {
+      const quote = quoteMap.get(symbol);
+      if (!quote) return null;
+
+      const [floatRaw, barsRaw, newsRaw] = await Promise.all([
+        fetchShareFloat(symbol).catch(() => null),
+        fetchIntraday5m(symbol).catch(() => []),
+        marketNewsEnabled ? fetchStockNews(symbol, 3).catch(() => []) : Promise.resolve([])
+      ]);
+
+      const bars = latestBarsToday(barsRaw);
+
+      const floatShares = Number(
+        floatRaw?.floatShares ??
+        floatRaw?.freeFloat ??
+        floatRaw?.sharesFloat ??
+        0
+      );
+
+      const volRel = computeVolRel(quote.volume, bars);
+      const floatPct = computeFloatPct(quote.volume, floatShares);
+      const hold = computePremarketRangeHold(bars, quote.price);
+      const compression = computeCompression(bars);
+      const momentumAlive = computeMomentumAlive(bars);
+      const score = computeScore({
+        gapPct: quote.changePct,
+        volRel,
+        hold,
+        compression,
+        momentumAlive
+      });
+
+      const actionSignal = guessOpenReady(score, volRel, hold, compression, momentumAlive);
+      const institutional = hasInstitutionalVolume(volRel, floatPct, hold, compression);
+
+      return {
+        symbol: quote.symbol,
+        price: quote.price,
+        gapPct: quote.changePct,
+        volume: quote.volume,
+        previousClose: quote.previousClose,
+        volRel,
+        floatPct,
+        floatShares,
+        hold,
+        compression,
+        momentumAlive,
+        score,
+        actionSignal,
+        institutional,
+        sector: inferSector(symbol, newsRaw),
+        hasNews: safeArray(newsRaw).length > 0
+      };
+    }
+
+    function inferSector(symbol, newsItems) {
+      // Version légère pour rester robuste côté browser.
+      // On garde quelques regroupements utiles.
+      const map = {
+        NVDA: "SEMI", AMD: "SEMI", AVGO: "SEMI", MRVL: "SEMI", MU: "SEMI", QCOM: "SEMI",
+        TSLA: "EV", UBER: "TRANSPORT",
+        XOM: "ENERGY", CVX: "ENERGY",
+        META: "TECH", GOOGL: "TECH", AAPL: "TECH", AMZN: "TECH", NFLX: "TECH",
+        PLTR: "AI", SMCI: "AI", COIN: "CRYPTO", JPM: "BANKS", BABA: "CHINA"
+      };
+
+      if (map[symbol]) return map[symbol];
+
+      const text = safeArray(newsItems).map(n => `${n.title || ""} ${n.text || ""}`.toUpperCase()).join(" ");
+      if (text.includes("SEMICONDUCTOR") || text.includes("CHIP")) return "SEMI";
+      if (text.includes("OIL") || text.includes("ENERGY")) return "ENERGY";
+      if (text.includes("BANK")) return "BANKS";
+      return "GENERAL";
+    }
+
     async function scanMarket() {
+      const btn = document.getElementById("scanBtn");
       const status = document.getElementById("status");
-      status.textContent = "Scan en cours...";
+      const output = document.getElementById("output");
+
+      btn.disabled = true;
+      status.textContent = "Scan réel en cours...";
+      output.innerHTML = "";
 
       try {
-        // ============================================================
-        // ICI, plus tard, tu remplaces cette ligne par ton vrai fetch
-        // ex:
-        // const raw = await fetch('/api/scan').then(r => r.json());
-        // ============================================================
-        const raw = getRawScanData();
+        if (!API_KEY || API_KEY.includes("TON_API_KEY")) {
+          throw new Error("Ajoute d’abord ta clé API FMP dans la constante API_KEY.");
+        }
 
-        let rows = raw
-          .filter(passesLiquidityFilter)
-          .map(row => ({
-            ...row,
-            score: computeScore(row)
-          }));
+        // 1) Quotes universe + market context
+        const [rawQuotes, rawMarketQuotes] = await Promise.all([
+          fetchBatchQuotes(UNIVERSE),
+          fetchBatchQuotes(MARKET_SYMBOLS)
+        ]);
 
-        rows = assignSectorLeaders(rows);
-        rows = rankRows(rows);
+        const quoteMap = new Map(
+          rawQuotes
+            .map(normalizeQuote)
+            .filter(q => q.symbol)
+            .map(q => [q.symbol, q])
+        );
 
-        renderOutput(rows);
-        status.textContent = `Scan terminé : ${rows.length} titres filtrés.`;
+        const marketMap = new Map(
+          rawMarketQuotes
+            .map(normalizeQuote)
+            .filter(q => q.symbol)
+            .map(q => [q.symbol, q])
+        );
+
+        const context = chooseMarketContext(
+          marketMap.get("SPY"),
+          marketMap.get("QQQ"),
+          marketMap.get("^VIX")
+        );
+
+        // 2) Enrich each symbol
+        const records = [];
+        for (const symbol of UNIVERSE) {
+          try {
+            const rec = await buildSymbolRecord(symbol, quoteMap, true);
+            if (rec) records.push(rec);
+            await delay(120);
+          } catch (e) {
+            console.warn("Erreur symbole", symbol, e);
+          }
+        }
+
+        // 3) Filter + sector leaders + sort
+        let rows = records.filter(passesLiquidityFilter);
+        rows = pickSectorLeaders(rows);
+
+        rows.sort((a, b) => {
+          const rankA =
+            a.score * 10 +
+            (a.institutional ? 4 : 0) +
+            (a.isSectorLeader ? 3 : 0) +
+            actionRank(a.actionSignal) * 3 +
+            a.volRel +
+            absPct(a.gapPct);
+
+          const rankB =
+            b.score * 10 +
+            (b.institutional ? 4 : 0) +
+            (b.isSectorLeader ? 3 : 0) +
+            actionRank(b.actionSignal) * 3 +
+            b.volRel +
+            absPct(b.gapPct);
+
+          return rankB - rankA;
+        });
+
+        renderOutput(rows, context);
+        status.textContent = `Scan terminé : ${rows.length} titres retenus.`;
       } catch (err) {
         console.error(err);
         status.textContent = "Erreur pendant le scan.";
-        document.getElementById("output").innerHTML = `
+        output.innerHTML = `
           <div class="footnote" style="color:#fca5a5;">
-            Impossible de générer le radar. Vérifie la source des données ou le code du scan.
+            ${String(err.message || err)}
           </div>
         `;
+      } finally {
+        btn.disabled = false;
       }
     }
 
-    // Affichage initial automatique
+    // Auto-run
     scanMarket();
   </script>
 </body>
