@@ -1,1 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NorthStar PreMarket</title>
 
+<style>
+body{
+background:#0f1115;
+color:white;
+font-family:Arial;
+text-align:center;
+padding:20px;
+}
+
+h1{
+color:#3dd6ff;
+}
+
+button{
+background:#3dd6ff;
+border:none;
+padding:14px 20px;
+font-size:18px;
+border-radius:8px;
+margin:10px;
+cursor:pointer;
+}
+
+table{
+margin:auto;
+margin-top:20px;
+border-collapse:collapse;
+width:auto;
+}
+
+td,th{
+padding:8px 14px;
+border-bottom:1px solid #333;
+}
+
+th{
+font-weight:bold;
+}
+
+.green{color:#00ff9c}
+.red{color:#ff5a5a}
+.gray{color:#bbbbbb}
+
+@media (max-width: 700px){
+  body{
+    padding:12px;
+  }
+
+  h1{
+    font-size:24px;
+  }
+
+  td,th{
+    padding:6px 8px;
+    font-size:14px;
+  }
+
+  button{
+    font-size:16px;
+    padding:12px 16px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>NorthStar PreMarket</h1>
+
+<button onclick="scan()">SCAN MARKET</button>
+
+<table id="table">
+<tr>
+<th>Ticker</th>
+<th>Prix</th>
+<th>Gap %</th>
+<th>Session</th>
+<th>Force</th>
+</tr>
+</table>
+
+<script>
+const tickers = [
+"NVDA","TSLA","AMD","PLTR","SMCI",
+"MU","MRVL","AVGO","AAPL","XOM","CVX"
+]
+
+function getForce(absGap){
+  if (absGap >= 5) return "EXPLOSIF"
+  if (absGap >= 3) return "FORT"
+  if (absGap >= 1.5) return "ACTIF"
+  return "FAIBLE"
+}
+
+async function scan(){
+  let results = []
+
+  const requests = tickers.map(async (t) => {
+    try{
+      let url = `https://autumn-dream-7e4e.lavpierre.workers.dev/?symbol=${t}`
+
+      let r = await fetch(url)
+      let data = await r.json()
+
+      if (!data.chart || !data.chart.result || !data.chart.result[0]) return
+
+      let result = data.chart.result[0]
+      let meta = result.meta || {}
+
+      let previous = meta.chartPreviousClose
+      if (!previous) previous = meta.previousClose
+
+      if (previous == null || previous === 0) return
+
+      let price = null
+      let session = "REG"
+
+      if (meta.preMarketPrice != null && meta.preMarketPrice > 0) {
+        price = meta.preMarketPrice
+        session = "PRE"
+      } else if (meta.postMarketPrice != null && meta.postMarketPrice > 0) {
+        price = meta.postMarketPrice
+        session = "POST"
+      } else if (meta.regularMarketPrice != null) {
+        price = meta.regularMarketPrice
+        session = "REG"
+      }
+
+      if (price == null) return
+
+      let gap = ((price - previous) / previous) * 100
+      let absGap = Math.abs(gap)
+
+      results.push({
+        ticker: t,
+        price: price,
+        gap: gap,
+        session: session,
+        force: getForce(absGap)
+      })
+
+    }catch(e){
+      console.log("Erreur sur", t, e)
+    }
+  })
+
+  await Promise.all(requests)
+
+  results.sort((a,b) => Math.abs(b.gap) - Math.abs(a.gap))
+
+  let table = document.getElementById("table")
+
+  table.innerHTML = `
+    <tr>
+      <th>Ticker</th>
+      <th>Prix</th>
+      <th>Gap %</th>
+      <th>Session</th>
+      <th>Force</th>
+    </tr>
+  `
+
+  for(let r of results){
+    let color = r.gap >= 0 ? "green" : "red"
+    let sessionColor = r.session === "PRE" ? "green" : (r.session === "POST" ? "red" : "gray")
+
+    table.innerHTML += `
+      <tr>
+        <td>${r.ticker}</td>
+        <td>${r.price.toFixed(2)}</td>
+        <td class="${color}">${r.gap.toFixed(2)}%</td>
+        <td class="${sessionColor}">${r.session}</td>
+        <td>${r.force}</td>
+      </tr>
+    `
+  }
+}
+</script>
+
+</body>
+</html>
