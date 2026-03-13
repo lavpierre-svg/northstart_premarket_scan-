@@ -291,7 +291,7 @@
       // Séquentiel pour rester gentil avec les limites API
       for (const group of groups) {
         const joined = group.join(",");
-        const url = `https://financialmodelingprep.com/stable/quote/${symbols}?apikey=${API_KEY}`;
+        const url = `https://financialmodelingprep.com/stable/quotes/${symbols}?apikey=${API_KEY}`;
         const data = await fetchJson(url);
         results.push(...safeArray(data));
         await delay(150);
