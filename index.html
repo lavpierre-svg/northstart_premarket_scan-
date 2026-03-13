@@ -72,8 +72,7 @@ for(let t of tickers){
 
 try{
 
-let url=`https://query1.finance.yahoo.com/v8/finance/chart/${t}?range=2d&interval=1d`
-
+let url=`https://autumn-dream-7e4e.lavpierre.workers.dev/?symbol=${t}`
 let r=await fetch(url)
 let data=await r.json()
 
