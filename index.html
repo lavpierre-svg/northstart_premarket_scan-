@@ -15,6 +15,12 @@ padding:20px;
 
 h1{
 color:#3dd6ff;
+margin-bottom:8px;
+}
+
+#summary{
+margin:10px 0 18px 0;
+font-size:16px;
 }
 
 button{
@@ -42,6 +48,21 @@ border-bottom:1px solid #333;
 .green{color:#00ff9c}
 .red{color:#ff5a5a}
 .gray{color:#bbbbbb}
+.yellow{color:#ffd166}
+
+.hot{
+font-weight:bold;
+color:#00ff9c;
+}
+
+.watch{
+font-weight:bold;
+color:#ffd166;
+}
+
+.ignore{
+color:#bbbbbb;
+}
 
 @media (max-width: 700px){
   body{
@@ -61,6 +82,10 @@ border-bottom:1px solid #333;
     font-size:16px;
     padding:12px 16px;
   }
+
+  #summary{
+    font-size:14px;
+  }
 }
 </style>
 </head>
@@ -68,6 +93,8 @@ border-bottom:1px solid #333;
 <body>
 
 <h1>NorthStar PreMarket</h1>
+
+<div id="summary">Clique sur SCAN MARKET</div>
 
 <button onclick="scan()">SCAN MARKET</button>
 
@@ -80,6 +107,7 @@ border-bottom:1px solid #333;
 <th>Force</th>
 <th>Vol Rel</th>
 <th>Vol Force</th>
+<th>Radar</th>
 </tr>
 </table>
 
@@ -107,6 +135,18 @@ function avg(arr){
   const clean = arr.filter(v => v != null && !isNaN(v) && v > 0)
   if(clean.length === 0) return 0
   return clean.reduce((a,b) => a + b, 0) / clean.length
+}
+
+function getRadar(absGap, volRel){
+  if(absGap >= 3 && volRel >= 1.5) return "HOT"
+  if(absGap >= 2 || volRel >= 1.2) return "WATCH"
+  return "IGNORE"
+}
+
+function radarRank(radar){
+  if(radar === "HOT") return 3
+  if(radar === "WATCH") return 2
+  return 1
 }
 
 async function scan(){
@@ -159,6 +199,8 @@ async function scan(){
         volRel = todayVolume / avgVolume
       }
 
+      let radar = getRadar(absGap, volRel)
+
       results.push({
         ticker: t,
         price: price,
@@ -166,7 +208,8 @@ async function scan(){
         session: session,
         force: getForce(absGap),
         volRel: volRel,
-        volForce: getVolForce(volRel)
+        volForce: getVolForce(volRel),
+        radar: radar
       })
 
     }catch(e){
@@ -176,7 +219,20 @@ async function scan(){
 
   await Promise.all(requests)
 
-  results.sort((a,b) => Math.abs(b.gap) - Math.abs(a.gap))
+  results.sort((a,b) => {
+    const radarDiff = radarRank(b.radar) - radarRank(a.radar)
+    if(radarDiff !== 0) return radarDiff
+    return Math.abs(b.gap) - Math.abs(a.gap)
+  })
+
+  let hotCount = results.filter(r => r.radar === "HOT").length
+  let watchCount = results.filter(r => r.radar === "WATCH").length
+  let ignoreCount = results.filter(r => r.radar === "IGNORE").length
+
+  document.getElementById("summary").innerHTML =
+    `<span class="hot">HOT: ${hotCount}</span> | ` +
+    `<span class="watch">WATCH: ${watchCount}</span> | ` +
+    `<span class="ignore">IGNORE: ${ignoreCount}</span>`
 
   let table = document.getElementById("table")
 
@@ -189,6 +245,7 @@ async function scan(){
       <th>Force</th>
       <th>Vol Rel</th>
       <th>Vol Force</th>
+      <th>Radar</th>
     </tr>
   `
 
@@ -196,6 +253,10 @@ async function scan(){
     let gapColor = r.gap >= 0 ? "green" : "red"
     let sessionColor = r.session === "PRE" ? "green" : (r.session === "POST" ? "red" : "gray")
     let volColor = r.volRel >= 1.5 ? "green" : "gray"
+
+    let radarClass = "ignore"
+    if(r.radar === "HOT") radarClass = "hot"
+    if(r.radar === "WATCH") radarClass = "watch"
 
     table.innerHTML += `
       <tr>
@@ -206,6 +267,7 @@ async function scan(){
         <td>${r.force}</td>
         <td class="${volColor}">${r.volRel.toFixed(2)}x</td>
         <td>${r.volForce}</td>
+        <td class="${radarClass}">${r.radar}</td>
       </tr>
     `
   }
