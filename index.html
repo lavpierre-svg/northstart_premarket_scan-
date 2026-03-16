@@ -530,10 +530,11 @@
     }
 
     function computeActionSignal(grade){
-      if (grade === "A") return "🟢GO";
-      if (grade === "B") return "🟡WAIT";
-      if (grade === "C") return "🟠SURV";
-      return "🔴STOP";
+  if (grade === "A") return "🟢 ENTRÉE";
+  if (grade === "B") return "🟡 À SURVEILLER";
+  if (grade === "C") return "🟠 OBSERVATION";
+  return "🔴 IGNORER";
+}
     }
 
     function computeGrade(score){
