@@ -358,12 +358,15 @@
       <div id="status" class="status">Prêt pour le scan réel.</div>
       <div id="output"></div>
       <div class="hint">Scanner prêt. Ajuste les univers SOLIDE ou EXPLOSIF directement dans le script.</div>
+    </div>
+  </div>
 
   <script>
     // =============================
     // CONFIG
     // =============================
     const API_KEY = "u1ujNxMOWm5fGfePMeOdrn3teLy8fzNW";
+
     const UNIVERSE_SOLID = [
       "AAPL","AMD","AMZN","AVGO","BABA","COIN","CVX","GOOGL","META","MRVL",
       "MU","NFLX","NVDA","PLTR","QCOM","SMCI","TSLA","UBER","XOM","JPM"
@@ -528,11 +531,10 @@
     }
 
     function computeActionSignal(grade){
-  if (grade === "A") return "🟢 ENTRÉE";
-  if (grade === "B") return "🟡 À SURVEILLER";
-  if (grade === "C") return "🟠 OBSERVATION";
-  return "🔴 IGNORER";
-}
+      if (grade === "A") return "🟢 ENTRÉE";
+      if (grade === "B") return "🟡 À SURVEILLER";
+      if (grade === "C") return "🟠 OBSERVATION";
+      return "🔴 IGNORER";
     }
 
     function computeGrade(score){
@@ -741,19 +743,19 @@
 
         ${
           topRows.length
-            ? `<div class="section-title">TOP CANDIDATS</div><div class="list">${renderRows(topRows)}</div>`
-            : `<div class="section-title">TOP CANDIDATS</div><div class="emptyBox">Aucun candidat fort pour l’instant.</div>`
+            ? `<div class="section-title">MEILLEURS SETUPS</div><div class="list">${renderRows(topRows)}</div>`
+            : `<div class="section-title">MEILLEURS SETUPS</div><div class="emptyBox">Aucun setup fort pour l’instant.</div>`
         }
 
         ${
           watchRows.length
-            ? `<div class="section-title">WATCH</div><div class="list">${renderRows(watchRows)}</div>`
+            ? `<div class="section-title">À SURVEILLER</div><div class="list">${renderRows(watchRows)}</div>`
             : ""
         }
 
         ${
           ignoreRows.length
-            ? `<div class="section-title">IGNORE</div><div class="list">${renderRows(ignoreRows)}</div>`
+            ? `<div class="section-title">À IGNORER</div><div class="list">${renderRows(ignoreRows)}</div>`
             : ""
         }
 
@@ -762,7 +764,7 @@
         </div>
 
         <div class="footnote">
-         Note A/B/C/D = Gap • Volume • Tenue du mouvement • Compression • Momentum • Qualité globale • Espace avant résistance
+          Note A/B/C/D = Gap • Volume • Tenue du mouvement • Compression • Momentum • Qualité globale • Espace avant résistance
         </div>
       `;
     }
@@ -780,9 +782,9 @@
       output.innerHTML = "";
 
       try {
-       if (!API_KEY) {
-  throw new Error("u1ujNxMOWm5fGfePMeOdrn3teLy8fzNW");
-}
+        if (!API_KEY || API_KEY === "u1ujNxMOWm5fGfePMeOdrn3teLy8fzNW") {
+          throw new Error("Ajoute ta vraie clé API FMP dans la constante API_KEY.");
+        }
 
         const universe = getUniverse();
 
