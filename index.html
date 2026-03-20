@@ -466,7 +466,7 @@
       const quote = normalizeQuote(bundle.quote);
       const history = Array.isArray(bundle.history) ? bundle.history : [];
 
-      if (!quote || history.length < 220) return null;
+      if (!quote || history.length < 50) return null;
 
       const closes = history.map(r => r.close);
       const volumes = history.map(r => Number(r.volume ?? 0));
@@ -687,9 +687,9 @@
       output.innerHTML = "";
 
       try {
-        if (!API_KEY || API_KEY.includes("u1ujNxMOWm5fGfePMeOdrn3teLy8fzNW")) {
-          throw new Error("Ajoute d’abord ta clé API FMP dans la constante API_KEY.");
-        }
+       if (!API_KEY || API_KEY.trim() === "") {
+  throw new Error("Ajoute d’abord ta clé API FMP dans la constante API_KEY.");
+}
 
         const bundles = await fetchMany([...MARKET_SYMBOLS, ...UNIVERSE]);
 
