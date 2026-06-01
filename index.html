@@ -360,31 +360,55 @@
     const API_KEY = "u1ujNxMOWm5fGfePMeOdrn3teLy8fzNW";
 
     // ~80 titres : US large cap + momentum + TSX liquides
-    const UNIVERSE = [
-      // Mega cap US
-      "AAPL","MSFT","GOOGL","AMZN","META","NVDA","TSLA","AVGO","AMD","QCOM",
-      // Tech / Semis
-      "MRVL","MU","SMCI","AMAT","LRCX","KLAC","TSM","CRM","NOW","SNOW",
-      // Finance US
-      "JPM","GS","MS","BAC","V","MA","SCHW","BLK",
-      // Énergie US
-      "XOM","CVX","COP","SLB","HAL","MPC","VLO","OXY",
-      // Défense / Aéro
-      "AXON","AVAV","KTOS","LHX","RTX","LMT","NOC","GD",
-      // Momentum / Croissance
-      "PLTR","COIN","HOOD","HIMS","SOFI","UPST","AFRM",
-      "UBER","NFLX","BKNG","ABNB",
-      // Space / Tech volatil
-      "RKLB","ASTS","IONQ","SOUN","NBIS",
-      // Crypto adjacent
-      "MARA","CLSK","WULF",
-      // Biotech
-      "LLY","ABBV","AMGN","GILD","VRTX","MRNA","REGN",
-      // Matières premières US
-      "FCX","NUE","CLF","AA","AMR","BTU",
-      // ETFs contexte marché
-      "SPY","QQQ","IWM","XLE","GDX",
-    ];
+const UNIVERSE = [
+  // Mega cap US
+  "AAPL","MSFT","GOOGL","AMZN","META","NVDA","TSLA","AVGO","AMD","QCOM",
+  // Tech / Semis
+  "MRVL","MU","SMCI","AMAT","LRCX","KLAC","TSM","CRM","NOW","SNOW",
+  // Finance US
+  "JPM","GS","MS","BAC","V","MA","SCHW","BLK",
+  // Énergie US
+  "XOM","CVX","COP","SLB","HAL","MPC","VLO","OXY",
+  // Défense / Aéro
+  "AXON","AVAV","KTOS","LHX","RTX","LMT","NOC","GD","DPRO",
+  // Momentum / Croissance
+  "PLTR","COIN","HOOD","HIMS","SOFI","UPST","AFRM",
+  "UBER","NFLX","BKNG","ABNB","SHOP",
+  // Space / Tech volatil
+  "RKLB","ASTS","IONQ","SOUN","NBIS","SPCE",
+  // Crypto adjacent
+  "MARA","CLSK","WULF","RIOT","MSTR",
+  // Biotech
+  "LLY","ABBV","AMGN","GILD","VRTX","MRNA","REGN",
+  // Matières premières US
+  "FCX","NUE","CLF","AA","AMR","BTU","WPM","AEM","FNV","KTOS",
+  // ETFs contexte marché
+  "SPY","QQQ","IWM","XLE","GDX",
+
+  // ── TSX CANADIENS ─────────────────────────────────────────
+  // Banques
+  "TD.TO","BNS.TO","RY.TO","BMO.TO","CM.TO","NA.TO",
+  // Énergie
+  "CNQ.TO","SU.TO","CVE.TO","ATH.TO","VET.TO","TVE.TO","SGY.TO",
+  // Or / Métaux précieux
+  "WPM.TO","AEM.TO","AGI.TO","K.TO","DPM.TO","FNV.TO","CCO.TO",
+  // Tech TSX
+  "SHOP.TO","KXS.TO","OTEX.TO","BB.TO","CSU.TO","ENGH.TO",
+  // Télécoms
+  "T.TO","BCE.TO","RCI-B.TO",
+  // Industriels / Défense
+  "MDA.TO","CAE.TO","BBI.TO",
+  // Matières premières
+  "TECK-B.TO","FM.TO","LUN.TO","CS.TO","PNG.TO",
+  // Dividendes / Utilities
+  "FTS.TO","EMA.TO","AQN.TO","PPL.TO","TRP.TO","ENB.TO",
+  // Croissance / Momentum TSX
+  "WELL.TO","DOO.TO","GFL.TO","BYD.TO","MTY.TO",
+  // Cannabis
+  "ACB.TO","WEED.TO","CRON.TO",
+  // Minières juniors
+  "MAG.TO","OR.TO","EDV.TO",
+];
 
     const MARKET_SYMBOLS = ["SPY","QQQ","IWM"];
 
