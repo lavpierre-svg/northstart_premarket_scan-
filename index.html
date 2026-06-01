@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>🚀 NORTHSTAR PREMARKET RADAR</title>
+  <title>🚀 NORTHSTAR PREMARKET RADAR v2</title>
   <style>
     :root{
       --bg:#0b1220;
@@ -29,10 +29,7 @@
       font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     }
 
-    .wrap{
-      max-width:760px;
-      margin:0 auto;
-    }
+    .wrap{ max-width:760px; margin:0 auto; }
 
     .card{
       background:rgba(18,26,43,.96);
@@ -47,7 +44,14 @@
       font-weight:800;
       font-size:20px;
       letter-spacing:.3px;
-      margin:2px 0 10px;
+      margin:2px 0 4px;
+    }
+
+    .version{
+      text-align:center;
+      font-size:11px;
+      color:var(--muted);
+      margin-bottom:10px;
     }
 
     .divider{
@@ -68,19 +72,17 @@
       appearance:none;
       border:none;
       border-radius:12px;
-      padding:12px 16px;
+      padding:12px 20px;
       font-size:15px;
       font-weight:800;
       color:#06101b;
       background:linear-gradient(180deg,#7dd3fc,#38bdf8);
       box-shadow:0 6px 16px rgba(56,189,248,.22);
       cursor:pointer;
+      transition:opacity .2s;
     }
 
-    button:disabled{
-      opacity:.6;
-      cursor:not-allowed;
-    }
+    button:disabled{ opacity:.6; cursor:not-allowed; }
 
     .status{
       text-align:center;
@@ -89,6 +91,23 @@
       min-height:18px;
       margin-bottom:10px;
       line-height:1.45;
+    }
+
+    .progress-bar{
+      width:100%;
+      height:4px;
+      background:rgba(255,255,255,.06);
+      border-radius:4px;
+      margin-bottom:12px;
+      overflow:hidden;
+    }
+
+    .progress-fill{
+      height:100%;
+      background:linear-gradient(90deg,#38bdf8,#22c55e);
+      border-radius:4px;
+      transition:width .3s ease;
+      width:0%;
     }
 
     .section-title{
@@ -127,18 +146,8 @@
       color:#bbf7d0;
     }
 
-    .market-main{
-      font-size:19px;
-      margin-bottom:6px;
-      letter-spacing:.3px;
-    }
-
-    .market-sub{
-      font-size:13px;
-      font-weight:700;
-      color:#dbe7f5;
-      opacity:.9;
-    }
+    .market-main{ font-size:19px; margin-bottom:6px; letter-spacing:.3px; }
+    .market-sub{ font-size:13px; font-weight:700; color:#dbe7f5; opacity:.9; }
 
     .king-box{
       background:linear-gradient(180deg,rgba(251,191,36,.08),rgba(251,191,36,.03));
@@ -169,27 +178,29 @@
 
     .row:last-child{ margin-bottom:0; }
 
-    .ticker{
-      font-weight:900;
-      font-size:17px;
-      letter-spacing:.3px;
-    }
-
-    .middle{
-      min-width:0;
-    }
-
-    .signal{
-      font-size:17px;
-      font-weight:900;
-      white-space:nowrap;
-    }
+    .ticker{ font-weight:900; font-size:17px; letter-spacing:.3px; }
+    .middle{ min-width:0; }
+    .signal{ font-size:17px; font-weight:900; white-space:nowrap; }
 
     .meta{
       font-size:12px;
       color:#d7e1f0;
       line-height:1.5;
       margin-top:2px;
+    }
+
+    .score-bar-wrap{
+      height:4px;
+      background:rgba(255,255,255,.07);
+      border-radius:4px;
+      margin-top:5px;
+      overflow:hidden;
+    }
+
+    .score-bar-fill{
+      height:100%;
+      border-radius:4px;
+      transition:width .4s ease;
     }
 
     .summary{
@@ -208,11 +219,76 @@
       line-height:1.5;
     }
 
-    .hint{
-      margin-top:12px;
-      color:var(--muted);
+    .scoring-legend{
+      margin-top:16px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px;
+    }
+
+    .scoring-legend-title{
       font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.5px;
+      margin-bottom:8px;
+    }
+
+    .scoring-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:4px 12px;
+    }
+
+    .scoring-item{
+      font-size:11px;
+      color:#cdd8ea;
+      display:flex;
+      justify-content:space-between;
+      padding:2px 0;
+      border-bottom:1px solid rgba(255,255,255,.04);
+    }
+
+    .scoring-pts{
+      color:var(--gold);
+      font-weight:800;
+    }
+
+    .classification-row{
+      display:flex;
+      gap:8px;
+      margin-top:8px;
+      flex-wrap:wrap;
+    }
+
+    .class-badge{
+      flex:1;
+      min-width:80px;
       text-align:center;
+      padding:5px 8px;
+      border-radius:8px;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .class-badge.watch{
+      background:rgba(250,204,21,.10);
+      border:1px solid rgba(250,204,21,.30);
+      color:#fde68a;
+    }
+
+    .class-badge.hot{
+      background:rgba(249,115,22,.10);
+      border:1px solid rgba(249,115,22,.30);
+      color:#fdba74;
+    }
+
+    .class-badge.priority{
+      background:rgba(34,197,94,.10);
+      border:1px solid rgba(34,197,94,.30);
+      color:#bbf7d0;
     }
 
     .pill{
@@ -230,17 +306,14 @@
     .pill.green{ color:#bbf7d0; border-color:rgba(34,197,94,.30); }
     .pill.yellow{ color:#fde68a; border-color:rgba(250,204,21,.30); }
     .pill.red{ color:#fecaca; border-color:rgba(239,68,68,.30); }
+    .pill.blue{ color:#bae6fd; border-color:rgba(56,189,248,.30); }
+    .pill.orange{ color:#fdba74; border-color:rgba(249,115,22,.30); }
 
     @media (max-width:480px){
-      .row{
-        grid-template-columns:78px 1fr;
-      }
-      .signal{
-        grid-column: 1 / -1;
-        justify-self:end;
-        margin-top:-2px;
-      }
-      .ticker{font-size:16px}
+      .row{ grid-template-columns:78px 1fr; }
+      .signal{ grid-column:1/-1; justify-self:end; margin-top:-2px; }
+      .ticker{ font-size:16px; }
+      .scoring-grid{ grid-template-columns:1fr; }
     }
   </style>
 </head>
@@ -248,15 +321,35 @@
   <div class="wrap">
     <div class="card">
       <div class="title">🚀 NORTHSTAR PREMARKET RADAR</div>
+      <div class="version">v2.0 — Scoring Squeeze + ADX + Structure</div>
       <div class="divider"></div>
 
       <div class="actions">
         <button id="scanBtn" onclick="scanMarket()">SCAN MARKET</button>
       </div>
 
-      <div id="status" class="status">Prêt pour le scan réel.</div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div id="status" class="status">Prêt — 80 titres US + TSX couverts.</div>
       <div id="output"></div>
-      <div class="hint">Radar iPhone propre : EMA200 slope + EMA9/20 + cross up frais bonus.</div>
+
+      <!-- Légende scoring -->
+      <div class="scoring-legend">
+        <div class="scoring-legend-title">Scoring v2 — max 15 pts</div>
+        <div class="scoring-grid">
+          <div class="scoring-item"><span>Prix > EMA50</span><span class="scoring-pts">+2</span></div>
+          <div class="scoring-item"><span>EMA50 > EMA200</span><span class="scoring-pts">+2</span></div>
+          <div class="scoring-item"><span>Volume > 1.5x</span><span class="scoring-pts">+2</span></div>
+          <div class="scoring-item"><span>Squeeze actif</span><span class="scoring-pts">+2</span></div>
+          <div class="scoring-item"><span>Sortie squeeze ≤3 bougies</span><span class="scoring-pts">+3</span></div>
+          <div class="scoring-item"><span>ADX > 20</span><span class="scoring-pts">+2</span></div>
+          <div class="scoring-item"><span>ADX ascendant</span><span class="scoring-pts">+2</span></div>
+        </div>
+        <div class="classification-row">
+          <div class="class-badge watch">8+ Surveiller</div>
+          <div class="class-badge hot">10+ Très intéressant</div>
+          <div class="class-badge priority">12+ Priorité</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -266,172 +359,261 @@
     // =============================
     const API_KEY = "u1ujNxMOWm5fGfePMeOdrn3teLy8fzNW";
 
+    // ~80 titres : US large cap + momentum + TSX liquides
     const UNIVERSE = [
-      "AAPL","AMD","AMZN","AVGO","BABA","COIN","CVX","GOOGL","META","MRVL",
-      "MU","NFLX","NVDA","PLTR","QCOM","SMCI","TSLA","UBER","XOM","JPM"
+      // Mega cap US
+      "AAPL","MSFT","GOOGL","AMZN","META","NVDA","TSLA","AVGO","AMD","QCOM",
+      // Tech / Semis
+      "MRVL","MU","SMCI","AMAT","LRCX","KLAC","TSM","CRM","NOW","SNOW",
+      // Finance US
+      "JPM","GS","MS","BAC","V","MA","SCHW","BLK",
+      // Énergie US
+      "XOM","CVX","COP","SLB","HAL","MPC","VLO","OXY",
+      // Défense / Aéro
+      "AXON","AVAV","KTOS","LHX","RTX","LMT","NOC","GD",
+      // Momentum / Croissance
+      "PLTR","COIN","HOOD","HIMS","SOFI","UPST","AFRM",
+      "UBER","NFLX","BKNG","ABNB",
+      // Space / Tech volatil
+      "RKLB","ASTS","IONQ","SOUN","NBIS",
+      // Crypto adjacent
+      "MARA","CLSK","WULF",
+      // Biotech
+      "LLY","ABBV","AMGN","GILD","VRTX","MRNA","REGN",
+      // Matières premières US
+      "FCX","NUE","CLF","AA","AMR","BTU",
+      // ETFs contexte marché
+      "SPY","QQQ","IWM","XLE","GDX",
     ];
 
-    const MARKET_SYMBOLS = ["SPY","QQQ"];
-
-    const SETTINGS = {
-      ema200SlopeLookback: 10,
-      ema200SlopeLongMin: 0.5,
-      ema200SlopeFlatMax: 0.5,
-      rsiMin: 50,
-      rsiMax: 82,
-      minPrice: 5,
-      minVolume: 300000,
-      minRelVol: 1.1,
-      freshCrossLookbackBars: 1,
-      topCandidates: 3,
-      topWatch: 3
-    };
+    const MARKET_SYMBOLS = ["SPY","QQQ","IWM"];
 
     // =============================
     // HELPERS
     // =============================
     function fmt1(n){ return Number.isFinite(n) ? n.toFixed(1) : "—"; }
     function fmt2(n){ return Number.isFinite(n) ? n.toFixed(2) : "—"; }
-    function absPct(n){ return Number.isFinite(n) ? Math.abs(n) : 0; }
 
-    function delay(ms){
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
+    function delay(ms){ return new Promise(r => setTimeout(r, ms)); }
 
-    function clamp(v, min, max){
-      return Math.max(min, Math.min(max, v));
-    }
-
-    function sanitizeTicker(symbol){
-      const s = String(symbol || "").trim().toUpperCase();
-      if (!s) return "";
+    function sanitizeTicker(s){
+      s = String(s||"").trim().toUpperCase();
       return s.startsWith("$") ? s.slice(1) : s;
     }
 
     async function fetchJson(url){
       const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status} sur ${url}`);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
     }
 
     // =============================
-    // API
+    // API FMP
     // =============================
     async function fetchQuote(symbol){
-      const clean = sanitizeTicker(symbol);
-      const url = `https://financialmodelingprep.com/stable/quote?symbol=${encodeURIComponent(clean)}&apikey=${API_KEY}`;
+      const url = `https://financialmodelingprep.com/stable/quote?symbol=${encodeURIComponent(symbol)}&apikey=${API_KEY}`;
       const data = await fetchJson(url);
       return Array.isArray(data) ? data[0] : null;
     }
 
     async function fetchDailyHistory(symbol){
-      const clean = sanitizeTicker(symbol);
-      const url = `https://financialmodelingprep.com/stable/historical-price-eod/full?symbol=${encodeURIComponent(clean)}&apikey=${API_KEY}`;
+      const url = `https://financialmodelingprep.com/stable/historical-price-eod/full?symbol=${encodeURIComponent(symbol)}&apikey=${API_KEY}`;
       const data = await fetchJson(url);
-
-      // Supporte plusieurs formats possibles
       let rows = [];
       if (Array.isArray(data)) rows = data;
       else if (Array.isArray(data?.historical)) rows = data.historical;
       else if (Array.isArray(data?.prices)) rows = data.prices;
-
       return rows
         .map(r => ({
-          date: r.date || r.label || "",
+          date: r.date || "",
           close: Number(r.close ?? r.adjClose ?? NaN),
+          high: Number(r.high ?? NaN),
+          low: Number(r.low ?? NaN),
           volume: Number(r.volume ?? 0)
         }))
         .filter(r => Number.isFinite(r.close))
-        .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+        .sort((a,b) => String(a.date).localeCompare(String(b.date)));
     }
 
     async function fetchSymbolBundle(symbol){
-      const clean = sanitizeTicker(symbol);
       const [quote, history] = await Promise.all([
-        fetchQuote(clean),
-        fetchDailyHistory(clean)
+        fetchQuote(symbol),
+        fetchDailyHistory(symbol)
       ]);
-      return { symbol: clean, quote, history };
+      return { symbol, quote, history };
     }
 
-    async function fetchMany(symbols){
+    async function fetchMany(symbols, onProgress){
       const out = [];
-      for (const symbol of symbols) {
+      for (let i = 0; i < symbols.length; i++) {
         try {
-          const item = await fetchSymbolBundle(symbol);
+          const item = await fetchSymbolBundle(symbols[i]);
           out.push(item);
-        } catch (err) {
-          console.warn("Erreur symbole", symbol, err);
+        } catch(e) {
+          console.warn("Erreur", symbols[i], e);
         }
-        await delay(120);
+        if (onProgress) onProgress(i + 1, symbols.length);
+        await delay(130);
       }
       return out;
     }
 
     // =============================
-    // TECHNICALS
+    // INDICATEURS TECHNIQUES
     // =============================
-    function ema(values, period){
-      if (!Array.isArray(values) || values.length < period) return [];
+    function calcEma(values, period){
+      if (values.length < period) return [];
       const k = 2 / (period + 1);
-      const out = [];
-
+      const out = new Array(values.length).fill(NaN);
       let sma = 0;
       for (let i = 0; i < period; i++) sma += values[i];
       sma /= period;
-      out[period - 1] = sma;
-
-      for (let i = period; i < values.length; i++) {
-        out[i] = values[i] * k + out[i - 1] * (1 - k);
+      out[period-1] = sma;
+      for (let i = period; i < values.length; i++){
+        out[i] = values[i] * k + out[i-1] * (1-k);
       }
-
       return out;
     }
 
-    function rsi(values, period = 14){
-      if (!Array.isArray(values) || values.length < period + 1) return [];
-      const out = Array(values.length).fill(undefined);
-
-      let gains = 0;
-      let losses = 0;
-
-      for (let i = 1; i <= period; i++) {
-        const diff = values[i] - values[i - 1];
-        if (diff >= 0) gains += diff;
-        else losses += Math.abs(diff);
+    function calcSma(values, period){
+      const out = new Array(values.length).fill(NaN);
+      for (let i = period-1; i < values.length; i++){
+        let s = 0;
+        for (let j = i-period+1; j <= i; j++) s += values[j];
+        out[i] = s / period;
       }
-
-      let avgGain = gains / period;
-      let avgLoss = losses / period;
-      out[period] = avgLoss === 0 ? 100 : 100 - (100 / (1 + avgGain / avgLoss));
-
-      for (let i = period + 1; i < values.length; i++) {
-        const diff = values[i] - values[i - 1];
-        const gain = diff > 0 ? diff : 0;
-        const loss = diff < 0 ? Math.abs(diff) : 0;
-
-        avgGain = ((avgGain * (period - 1)) + gain) / period;
-        avgLoss = ((avgLoss * (period - 1)) + loss) / period;
-
-        out[i] = avgLoss === 0 ? 100 : 100 - (100 / (1 + avgGain / avgLoss));
-      }
-
       return out;
     }
 
-    function lastDefined(arr){
-      for (let i = arr.length - 1; i >= 0; i--) {
+    function calcAtr(highs, lows, closes, period){
+      const tr = new Array(closes.length).fill(NaN);
+      for (let i = 1; i < closes.length; i++){
+        tr[i] = Math.max(
+          highs[i] - lows[i],
+          Math.abs(highs[i] - closes[i-1]),
+          Math.abs(lows[i] - closes[i-1])
+        );
+      }
+      // EMA de TR
+      const k = 2 / (period + 1);
+      const atr = new Array(closes.length).fill(NaN);
+      let first = 0, cnt = 0;
+      for (let i = 1; i < tr.length; i++){
+        if (!isNaN(tr[i])){
+          first += tr[i];
+          cnt++;
+          if (cnt === period){
+            atr[i] = first / period;
+            for (let j = i+1; j < tr.length; j++){
+              atr[j] = tr[j] * k + atr[j-1] * (1-k);
+            }
+            break;
+          }
+        }
+      }
+      return atr;
+    }
+
+    function calcAdx(highs, lows, closes, period){
+      const plusDM = new Array(closes.length).fill(0);
+      const minusDM = new Array(closes.length).fill(0);
+      for (let i = 1; i < closes.length; i++){
+        const up = highs[i] - highs[i-1];
+        const dn = lows[i-1] - lows[i];
+        plusDM[i]  = (up > dn && up > 0) ? up : 0;
+        minusDM[i] = (dn > up && dn > 0) ? dn : 0;
+      }
+      const atr = calcAtr(highs, lows, closes, period);
+      const k = 2 / (period + 1);
+
+      // EMA des DM
+      const pDM = new Array(closes.length).fill(NaN);
+      const mDM = new Array(closes.length).fill(NaN);
+      // Init avec SMA
+      let sp=0, sm=0;
+      for (let i = 1; i <= period; i++){ sp += plusDM[i]; sm += minusDM[i]; }
+      pDM[period] = sp / period;
+      mDM[period] = sm / period;
+      for (let i = period+1; i < closes.length; i++){
+        pDM[i] = plusDM[i] * k + pDM[i-1] * (1-k);
+        mDM[i] = minusDM[i] * k + mDM[i-1] * (1-k);
+      }
+
+      const pDI = new Array(closes.length).fill(NaN);
+      const mDI = new Array(closes.length).fill(NaN);
+      const dx  = new Array(closes.length).fill(NaN);
+      for (let i = period; i < closes.length; i++){
+        if (!isNaN(atr[i]) && atr[i] > 0){
+          pDI[i] = 100 * pDM[i] / atr[i];
+          mDI[i] = 100 * mDM[i] / atr[i];
+          const sum = pDI[i] + mDI[i];
+          dx[i] = sum > 0 ? 100 * Math.abs(pDI[i] - mDI[i]) / sum : 0;
+        }
+      }
+
+      // EMA du DX = ADX
+      const adx = new Array(closes.length).fill(NaN);
+      let firstDx = 0, cntDx = 0, startIdx = -1;
+      for (let i = 0; i < dx.length; i++){
+        if (!isNaN(dx[i])){
+          firstDx += dx[i];
+          cntDx++;
+          if (cntDx === period){
+            adx[i] = firstDx / period;
+            startIdx = i;
+            break;
+          }
+        }
+      }
+      if (startIdx >= 0){
+        for (let i = startIdx+1; i < dx.length; i++){
+          if (!isNaN(dx[i])) adx[i] = dx[i] * k + adx[i-1] * (1-k);
+        }
+      }
+
+      return { adx, pDI, mDI };
+    }
+
+    // ── TTM SQUEEZE ──────────────────────────────────────────────
+    function calcSqueeze(closes, highs, lows, bbLen=20, bbMult=2.0, kcLen=20, kcMult=1.5){
+      const bb_mid = calcSma(closes, bbLen);
+      const stdArr = new Array(closes.length).fill(NaN);
+      for (let i = bbLen-1; i < closes.length; i++){
+        let mean = bb_mid[i];
+        let variance = 0;
+        for (let j = i-bbLen+1; j <= i; j++) variance += Math.pow(closes[j]-mean, 2);
+        stdArr[i] = Math.sqrt(variance / bbLen);
+      }
+      const bb_up = bb_mid.map((v,i) => isNaN(v) ? NaN : v + bbMult * stdArr[i]);
+      const bb_lo = bb_mid.map((v,i) => isNaN(v) ? NaN : v - bbMult * stdArr[i]);
+
+      const kc_mid = calcEma(closes, kcLen);
+      const atr = calcAtr(highs, lows, closes, kcLen);
+      const kc_up = kc_mid.map((v,i) => isNaN(v)||isNaN(atr[i]) ? NaN : v + kcMult * atr[i]);
+      const kc_lo = kc_mid.map((v,i) => isNaN(v)||isNaN(atr[i]) ? NaN : v - kcMult * atr[i]);
+
+      const sqzOn  = new Array(closes.length).fill(false);
+      const sqzOff = new Array(closes.length).fill(false);
+      for (let i = 0; i < closes.length; i++){
+        if (!isNaN(bb_up[i]) && !isNaN(kc_up[i])){
+          sqzOn[i]  = bb_up[i] < kc_up[i] && bb_lo[i] > kc_lo[i];
+          sqzOff[i] = bb_up[i] > kc_up[i] && bb_lo[i] < kc_lo[i];
+        }
+      }
+      return { sqzOn, sqzOff };
+    }
+
+    function lastFinite(arr){
+      for (let i = arr.length-1; i >= 0; i--){
         if (Number.isFinite(arr[i])) return arr[i];
       }
       return NaN;
     }
 
-    function getAtFromEnd(arr, offset){
+    function lastFiniteAt(arr, offset){
       let found = 0;
-      for (let i = arr.length - 1; i >= 0; i--) {
-        if (Number.isFinite(arr[i])) {
+      for (let i = arr.length-1; i >= 0; i--){
+        if (Number.isFinite(arr[i])){
           if (found === offset) return arr[i];
           found++;
         }
@@ -440,174 +622,188 @@
     }
 
     // =============================
-    // NORMALIZE + SCORE
+    // CALCUL INDICATEURS COMPLET
     // =============================
-    function normalizeQuote(raw){
-      if (!raw) return null;
-      return {
-        symbol: sanitizeTicker(raw.symbol || ""),
-        price: Number(raw.price ?? NaN),
-        previousClose: Number(raw.previousClose ?? NaN),
-        changePct: Number(raw.changesPercentage ?? raw.changePercentage ?? raw.changePercent ?? NaN),
-        volume: Number(raw.volume ?? 0),
-        open: Number(raw.open ?? NaN)
-      };
-    }
-
-    function computeGapPct(row){
-      if (Number.isFinite(row.changePct)) return row.changePct;
-      if (Number.isFinite(row.price) && Number.isFinite(row.previousClose) && row.previousClose !== 0) {
-        return ((row.price - row.previousClose) / row.previousClose) * 100;
-      }
-      return 0;
-    }
-
     function computeIndicators(bundle){
-      const quote = normalizeQuote(bundle.quote);
-      const history = Array.isArray(bundle.history) ? bundle.history : [];
+      const q = bundle.quote;
+      const hist = bundle.history || [];
+      if (!q || hist.length < 210) return null;
 
-      if (!quote || history.length < 50) return null;
+      const closes  = hist.map(r => r.close);
+      const highs   = hist.map(r => isNaN(r.high)  ? r.close : r.high);
+      const lows    = hist.map(r => isNaN(r.low)   ? r.close : r.low);
+      const volumes = hist.map(r => r.volume);
 
-      const closes = history.map(r => r.close);
-      const volumes = history.map(r => Number(r.volume ?? 0));
+      const price   = Number(q.price ?? NaN);
+      const prevClose = Number(q.previousClose ?? NaN);
+      if (!Number.isFinite(price)) return null;
+      if (price < 5) return null;
 
-      const ema9 = ema(closes, 9);
-      const ema20 = ema(closes, 20);
-      const ema200 = ema(closes, 200);
-      const rsi14 = rsi(closes, 14);
+      // Volume
+      const avgVol20 = volumes.slice(-20).reduce((a,b)=>a+b,0) / 20;
+      const relVol   = avgVol20 > 0 ? Number(q.volume ?? 0) / avgVol20 : 0;
+      if (avgVol20 < 300000) return null;
 
-      const ema9Now = lastDefined(ema9);
-      const ema20Now = lastDefined(ema20);
-      const ema200Now = lastDefined(ema200);
-      const ema9Prev = getAtFromEnd(ema9, 1);
-      const ema20Prev = getAtFromEnd(ema20, 1);
-      const ema200PrevLookback = getAtFromEnd(ema200, SETTINGS.ema200SlopeLookback);
+      // EMAs
+      const ema50arr  = calcEma(closes, 50);
+      const ema200arr = calcEma(closes, 200);
+      const ema50  = lastFinite(ema50arr);
+      const ema200 = lastFinite(ema200arr);
 
-      const avgVol20 = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
-      const relVol = avgVol20 > 0 ? quote.volume / avgVol20 : 0;
+      // ADX
+      const { adx: adxArr, pDI: pDIarr, mDI: mDIarr } = calcAdx(highs, lows, closes, 14);
+      const adxNow  = lastFinite(adxArr);
+      const adxPrev = lastFiniteAt(adxArr, 3); // 3 bougies avant
+      const pDI     = lastFinite(pDIarr);
+      const mDI     = lastFinite(mDIarr);
+      const adxFort = Number.isFinite(adxNow) && adxNow >= 20;
+      const adxUp   = Number.isFinite(adxNow) && Number.isFinite(adxPrev) && adxNow > adxPrev;
 
-      const slopePct = Number.isFinite(ema200Now) && Number.isFinite(ema200PrevLookback) && ema200PrevLookback !== 0
-        ? ((ema200Now - ema200PrevLookback) / ema200PrevLookback) * 100
-        : NaN;
+      // Squeeze
+      const { sqzOn, sqzOff } = calcSqueeze(closes, highs, lows);
+      const n = closes.length;
+      const sqzOnNow  = sqzOn[n-1];
+      const sqzOffNow = sqzOff[n-1];
 
-      const ema9AboveEma20 = Number.isFinite(ema9Now) && Number.isFinite(ema20Now) ? ema9Now > ema20Now : false;
-      const ema9CrossUpFresh = Number.isFinite(ema9Prev) && Number.isFinite(ema20Prev) && Number.isFinite(ema9Now) && Number.isFinite(ema20Now)
-        ? (ema9Prev <= ema20Prev && ema9Now > ema20Now)
-        : false;
+      // Sortie fraîche: sqzOff déclenché dans les 3 dernières bougies?
+      let sqzFreshExit = false;
+      for (let i = Math.max(0, n-3); i < n; i++){
+        if (sqzOff[i] && (i === 0 || sqzOn[i-1])) { sqzFreshExit = true; break; }
+      }
+      // Alternative: les 3 dernières bougies sont en sqzOff et avant c'était sqzOn
+      if (!sqzFreshExit){
+        let exitCount = 0;
+        for (let i = n-1; i >= Math.max(0, n-3); i--){ if (sqzOff[i]) exitCount++; }
+        const wasOn = n > 3 && sqzOn[n-4];
+        sqzFreshExit = exitCount >= 1 && wasOn;
+      }
 
-      const rsiNow = lastDefined(rsi14);
-      const gapPct = computeGapPct(quote);
+      const gapPct = Number.isFinite(prevClose) && prevClose > 0
+        ? ((price - prevClose) / prevClose) * 100
+        : Number(q.changesPercentage ?? 0);
+
+      // ADX catégorie
+      let adxCat = "FAIBLE";
+      if (adxNow >= 40) adxCat = "TRÈS FORT";
+      else if (adxNow >= 25) adxCat = "FORT";
+      else if (adxNow >= 20) adxCat = "ÉMERGEANT";
 
       return {
-        symbol: quote.symbol,
-        price: quote.price,
-        previousClose: quote.previousClose,
+        symbol:      sanitizeTicker(bundle.symbol),
+        price,
         gapPct,
-        volume: quote.volume,
+        volume:      Number(q.volume ?? 0),
         avgVol20,
         relVol,
-        ema9: ema9Now,
-        ema20: ema20Now,
-        ema200: ema200Now,
-        ema200SlopePct: slopePct,
-        ema9AboveEma20,
-        ema9CrossUpFresh,
-        rsi14: rsiNow
+        ema50,
+        ema200,
+        priceAboveEma50:  Number.isFinite(ema50)  && price > ema50,
+        ema50AboveEma200: Number.isFinite(ema200) && Number.isFinite(ema50) && ema50 > ema200,
+        adxNow,
+        adxPrev,
+        pDI,
+        mDI,
+        adxFort,
+        adxUp,
+        adxCat,
+        sqzOnNow,
+        sqzOffNow,
+        sqzFreshExit,
       };
     }
 
-    function slopeStrength(slope){
-      if (!Number.isFinite(slope)) return "N/A";
-      if (Math.abs(slope) < SETTINGS.ema200SlopeFlatMax) return "⚪ FLAT";
-      if (Math.abs(slope) < 0.8) return "🟡 SLOW";
-      if (Math.abs(slope) < 1.5) return "🟢 CLEAN";
-      return "🔥 STRONG";
+    // =============================
+    // SCORING v2
+    // =============================
+    function scoreRow(r){
+      let score = 0;
+      if (r.priceAboveEma50)    score += 2;  // Prix > EMA50
+      if (r.ema50AboveEma200)   score += 2;  // EMA50 > EMA200
+      if (r.relVol >= 1.5)      score += 2;  // Volume > 1.5x
+      if (r.sqzOnNow)           score += 2;  // Squeeze actif
+      if (r.sqzFreshExit)       score += 3;  // Sortie squeeze ≤3 bougies
+      if (r.adxFort)            score += 2;  // ADX > 20
+      if (r.adxUp)              score += 2;  // ADX ascendant
+      return score;
     }
 
-    function marketStatusFromContext(spyGap, qqqGap){
-      const avg = ((spyGap || 0) + (qqqGap || 0)) / 2;
+    function classifyRow(r){
+      const score = scoreRow(r);
+      let actionSignal, signalClass;
+      if (score >= 12){
+        actionSignal = "🟢 GO";
+        signalClass  = "priority";
+      } else if (score >= 10){
+        actionSignal = "🟠 HOT";
+        signalClass  = "hot";
+      } else if (score >= 8){
+        actionSignal = "🟡 WATCH";
+        signalClass  = "watch";
+      } else {
+        actionSignal = "⚪ SKIP";
+        signalClass  = "skip";
+      }
+      return { ...r, score, actionSignal, signalClass };
+    }
+
+    function marketStatusFromContext(rows){
+      const spy = rows.find(r => r.symbol === "SPY");
+      const qqq = rows.find(r => r.symbol === "QQQ");
+      const avg = ((spy?.gapPct||0) + (qqq?.gapPct||0)) / 2;
       if (avg <= -0.6) return { key:"dead", icon:"🔴", text:"MARKET DEAD", sub:"Pré-market faible ou négatif." };
-      if (avg < 0.4) return { key:"weak", icon:"🟡", text:"MARKET SLOW", sub:"Contexte mitigé, prudence." };
+      if (avg <   0.4) return { key:"weak", icon:"🟡", text:"MARKET SLOW", sub:"Contexte mitigé, prudence." };
       return { key:"live", icon:"🟢", text:"MARKET LIVE", sub:"Contexte plutôt favorable." };
     }
 
-    function passesBaseFilter(row){
-      return Number.isFinite(row.price) &&
-             row.price >= SETTINGS.minPrice &&
-             row.volume >= SETTINGS.minVolume;
+    // =============================
+    // RENDER
+    // =============================
+    function scoreBarColor(score){
+      if (score >= 12) return "linear-gradient(90deg,#22c55e,#4ade80)";
+      if (score >= 10) return "linear-gradient(90deg,#f97316,#fb923c)";
+      if (score >= 8)  return "linear-gradient(90deg,#facc15,#fde047)";
+      return "linear-gradient(90deg,#64748b,#94a3b8)";
     }
 
-    function scoreRow(row){
-      let score = 0;
+    function renderRow(r){
+      const sqzPill = r.sqzFreshExit
+        ? `<span class="pill orange">🔥 SQZ EXIT</span>`
+        : r.sqzOnNow
+          ? `<span class="pill yellow">🔴 SQZ ON</span>`
+          : `<span class="pill">SQZ OFF</span>`;
 
-      if (row.ema200SlopePct > SETTINGS.ema200SlopeLongMin) score += 30;
-      else if (row.ema200SlopePct > 0) score += 15;
+      const adxPill = r.adxFort
+        ? `<span class="pill ${r.adxUp ? "green" : "yellow"}">ADX ${r.adxCat} ${r.adxNow.toFixed(1)} ${r.adxUp ? "↗" : "→"}</span>`
+        : `<span class="pill red">ADX FAIBLE ${r.adxNow.toFixed(1)}</span>`;
 
-      if (row.ema9AboveEma20) score += 25;
-      if (row.ema9CrossUpFresh) score += 15;
+      const emaPill = r.priceAboveEma50 && r.ema50AboveEma200
+        ? `<span class="pill green">EMA✅</span>`
+        : r.priceAboveEma50
+          ? `<span class="pill yellow">P>EMA50</span>`
+          : `<span class="pill red">EMA❌</span>`;
 
-      if (row.relVol >= 2) score += 15;
-      else if (row.relVol >= SETTINGS.minRelVol) score += 10;
+      const volPill = r.relVol >= 1.5
+        ? `<span class="pill green">VOL ${r.relVol.toFixed(1)}x</span>`
+        : `<span class="pill">${r.relVol.toFixed(1)}x</span>`;
 
-      if (row.rsi14 >= SETTINGS.rsiMin && row.rsi14 <= SETTINGS.rsiMax) score += 10;
+      const pct = Math.min(100, (r.score / 15) * 100);
 
-      if (absPct(row.gapPct) >= 2) score += 5;
-
-      return clamp(score, 0, 100);
-    }
-
-    function classifyRow(row){
-      const slopeTxt = slopeStrength(row.ema200SlopePct);
-      const score = scoreRow(row);
-
-      const go =
-        row.ema200SlopePct > SETTINGS.ema200SlopeLongMin &&
-        row.ema9AboveEma20 &&
-        row.relVol >= SETTINGS.minRelVol &&
-        row.rsi14 >= SETTINGS.rsiMin &&
-        row.rsi14 <= SETTINGS.rsiMax;
-
-      const watch =
-        row.ema200SlopePct > 0 &&
-        row.ema9AboveEma20;
-
-      let actionSignal = "🔴 NO";
-      if (go && score >= 70) actionSignal = "🟢 GO";
-      else if (watch && score >= 50) actionSignal = "🟡 WATCH";
-
-      return {
-        ...row,
-        slopeTxt,
-        score,
-        actionSignal
-      };
-    }
-
-    function summarizeRow(row){
-      const parts = [
-        `Slope ${fmt2(row.ema200SlopePct)}%`,
-        `9>20 ${row.ema9AboveEma20 ? "YES" : "NO"}`,
-        `Cross ${row.ema9CrossUpFresh ? "YES" : "NO"}`,
-        `RelVol ${fmt1(row.relVol)}x`,
-        `RSI ${fmt1(row.rsi14)}`
-      ];
-      return parts.join(" | ");
-    }
-
-    function renderRow(row){
       return `
         <div class="row">
-          <div class="ticker">${row.symbol}</div>
+          <div class="ticker">${r.symbol}</div>
           <div class="middle">
-            <div class="meta">${summarizeRow(row)}</div>
             <div class="meta">
-              <span class="pill ${row.ema200SlopePct > SETTINGS.ema200SlopeLongMin ? "green" : (Math.abs(row.ema200SlopePct) < SETTINGS.ema200SlopeFlatMax ? "red" : "yellow")}">${row.slopeTxt}</span>
-              <span class="pill ${row.ema9AboveEma20 ? "green" : "red"}">EMA9>${row.ema9AboveEma20 ? "EMA20" : "NON"}</span>
-              <span class="pill ${row.ema9CrossUpFresh ? "green" : "yellow"}">CROSS ${row.ema9CrossUpFresh ? "FRESH" : "OLD"}</span>
-              <span class="pill">${row.score}/100</span>
+              ${r.price.toFixed(2)}$ | Gap ${r.gapPct >= 0 ? "+" : ""}${r.gapPct.toFixed(1)}% | RSI—
+            </div>
+            <div class="meta">
+              ${emaPill}${sqzPill}${adxPill}${volPill}
+              <span class="pill blue">${r.score}/15</span>
+            </div>
+            <div class="score-bar-wrap">
+              <div class="score-bar-fill" style="width:${pct}%;background:${scoreBarColor(r.score)}"></div>
             </div>
           </div>
-          <div class="signal">${row.actionSignal}</div>
+          <div class="signal">${r.actionSignal}</div>
         </div>
       `;
     }
@@ -615,11 +811,12 @@
     function renderOutput(rows, market){
       const output = document.getElementById("output");
 
-      const goRows = rows.filter(r => r.actionSignal === "🟢 GO").slice(0, SETTINGS.topCandidates);
-      const watchRows = rows.filter(r => r.actionSignal === "🟡 WATCH").slice(0, SETTINGS.topWatch);
-      const king = goRows[0] || watchRows[0] || null;
+      const goRows    = rows.filter(r => r.actionSignal === "🟢 GO");
+      const hotRows   = rows.filter(r => r.actionSignal === "🟠 HOT");
+      const watchRows = rows.filter(r => r.actionSignal === "🟡 WATCH").slice(0, 5);
+      const king      = goRows[0] || hotRows[0] || watchRows[0] || null;
 
-      const noTrade = goRows.length === 0 && watchRows.length === 0;
+      const noTrade = goRows.length === 0 && hotRows.length === 0 && watchRows.length === 0;
 
       output.innerHTML = `
         <div class="market-box ${market.key}">
@@ -627,49 +824,45 @@
           <div class="market-sub">${market.sub}</div>
         </div>
 
-        ${
-          king
-            ? `
-              <div class="king-box">
-                <div class="king-title">👑 KING OF THE DAY 👑</div>
-                ${renderRow(king)}
-                <div class="summary">Le plus propre du radar en ce moment.</div>
-              </div>
-            `
-            : `
-              <div class="king-box">
-                <div class="king-title">👑 KING OF THE DAY 👑</div>
-                <div class="summary">Aucun vrai KING ce matin. Pas assez propre pour chasser.</div>
-              </div>
-            `
-        }
+        ${king ? `
+          <div class="king-box">
+            <div class="king-title">👑 KING OF THE DAY 👑</div>
+            ${renderRow(king)}
+            <div class="summary">Le plus propre du radar en ce moment.</div>
+          </div>
+        ` : `
+          <div class="king-box">
+            <div class="king-title">👑 KING OF THE DAY 👑</div>
+            <div class="summary">Aucun KING ce matin. Contexte pas assez propre.</div>
+          </div>
+        `}
 
-        ${
-          noTrade
-            ? `
-              <div class="section-title">NO TRADE DAY</div>
-              <div class="summary">
-                Aucun ticker ne respecte en même temps la pente EMA200,
-                EMA9 au-dessus EMA20, et un volume assez vivant.
-              </div>
-            `
-            : ""
-        }
+        ${noTrade ? `
+          <div class="section-title">NO TRADE DAY</div>
+          <div class="summary">
+            Aucun titre ≥ 8 pts ce matin.<br>
+            Structure trop faible — squeeze absent ou ADX plat.
+          </div>
+        ` : ""}
 
-        ${
-          goRows.length
-            ? `<div class="section-title">TOP CANDIDATS</div>${goRows.map(renderRow).join("")}`
-            : ""
-        }
+        ${goRows.length ? `
+          <div class="section-title">🟢 PRIORITÉ — 12+ pts</div>
+          ${goRows.map(renderRow).join("")}
+        ` : ""}
 
-        ${
-          watchRows.length
-            ? `<div class="section-title">WATCH</div>${watchRows.map(renderRow).join("")}`
-            : ""
-        }
+        ${hotRows.length ? `
+          <div class="section-title">🟠 TRÈS INTÉRESSANT — 10-11 pts</div>
+          ${hotRows.map(renderRow).join("")}
+        ` : ""}
+
+        ${watchRows.length ? `
+          <div class="section-title">🟡 À SURVEILLER — 8-9 pts</div>
+          ${watchRows.map(renderRow).join("")}
+        ` : ""}
 
         <div class="footnote">
-          Filtre principal = EMA200 slope positive + EMA9 au-dessus EMA20 + cross up frais en bonus + volume + RSI.
+          Scoring v2 : Structure EMA + Squeeze TTM + ADX tendance<br>
+          Confirmation finale : UPV1 15M à 9h45
         </div>
       `;
     }
@@ -678,44 +871,46 @@
     // MAIN
     // =============================
     async function scanMarket(){
-      const btn = document.getElementById("scanBtn");
+      const btn    = document.getElementById("scanBtn");
       const status = document.getElementById("status");
+      const fill   = document.getElementById("progressFill");
       const output = document.getElementById("output");
 
-      btn.disabled = true;
-      status.textContent = "Scan réel en cours...";
+      btn.disabled  = true;
       output.innerHTML = "";
 
-      try {
-       if (!API_KEY || API_KEY.trim() === "") {
-  throw new Error("Ajoute d’abord ta clé API FMP dans la constante API_KEY.");
-}
+      const allSymbols = [...new Set([...MARKET_SYMBOLS, ...UNIVERSE])];
+      const total = allSymbols.length;
 
-        const bundles = await fetchMany([...MARKET_SYMBOLS, ...UNIVERSE]);
+      try {
+        if (!API_KEY || API_KEY.trim() === ""){
+          throw new Error("Ajoute ta clé API FMP dans API_KEY.");
+        }
+
+        const bundles = await fetchMany(allSymbols, (done, tot) => {
+          const pct = Math.round((done / tot) * 100);
+          fill.style.width = pct + "%";
+          status.textContent = `Scan en cours… ${done}/${tot} — ${allSymbols[done-1] || ""}`;
+        });
 
         const rows = bundles
           .map(computeIndicators)
           .filter(Boolean)
-          .filter(passesBaseFilter)
           .map(classifyRow)
-          .sort((a, b) => b.score - a.score);
+          .sort((a,b) => b.score - a.score);
 
-        const spy = rows.find(r => r.symbol === "SPY");
-        const qqq = rows.find(r => r.symbol === "QQQ");
-        const market = marketStatusFromContext(spy?.gapPct ?? 0, qqq?.gapPct ?? 0);
-
+        const market = marketStatusFromContext(rows);
         const stockRows = rows.filter(r => !MARKET_SYMBOLS.includes(r.symbol));
+        const tradable  = stockRows.filter(r => r.score >= 8);
 
         renderOutput(stockRows, market);
-        status.textContent = `Scan terminé : ${stockRows.length} titres exploitables.`;
-      } catch (err) {
+        fill.style.width = "100%";
+        status.textContent = `Scan terminé : ${stockRows.length} titres analysés — ${tradable.length} opportunités (≥8 pts).`;
+
+      } catch(err){
         console.error(err);
         status.textContent = "Erreur pendant le scan.";
-        output.innerHTML = `
-          <div class="footnote" style="color:#fca5a5;">
-            ${String(err.message || err)}
-          </div>
-        `;
+        output.innerHTML = `<div class="footnote" style="color:#fca5a5;">${String(err.message || err)}</div>`;
       } finally {
         btn.disabled = false;
       }
